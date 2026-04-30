@@ -8,10 +8,13 @@
 class Receipt
 {
 public:
+    Receipt(int id, time_t timestamp, std::vector<ReceiptItem> items);
+    int GetID();
     void AddItem(ReceiptItem item);
     double GetTotal();
 
 private:
+    int m_ID;
     time_t m_Timestamp;
     std::vector<ReceiptItem> m_Items;
 };

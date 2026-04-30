@@ -5,18 +5,13 @@
 
 int main()
 {
-    IDiscountStrategy* regular = new RegularDiscount(0.2);
-    IDiscountStrategy* bundle = new BundleDiscount(3, 0.5);
+    Product wine(1, "Wine", 200, std::make_shared<RegularDiscount>(0.2));
+    Product bread(2, "Bread", 30, std::make_shared<BundleDiscount>(3, 0.5));
 
-    Product wine("Wine", 200);
-    Product bread("Bread", 30);
+    ReceiptItem item1(wine, 5);
+    ReceiptItem item2(bread, 8);
 
-    ReceiptItem item1(wine, 5, std::make_unique<RegularDiscount>(0.2));
-    ReceiptItem item2(bread, 8, std::make_unique<BundleDiscount>(3, 0.5));
-
-    Receipt receipt;
-    receipt.AddItem(std::move(item1));
-    receipt.AddItem(std::move(item2));
+    Receipt receipt(1, time(nullptr), {item1, item2});
 
     std::cout << receipt.GetTotal() << "\n";
 }
