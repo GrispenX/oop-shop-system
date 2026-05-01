@@ -9,7 +9,11 @@ class ReceiptItem
 {
 public:
     ReceiptItem(Product product, int quantity);
-    double GetPrice();
+
+    Product GetProduct();
+    int GetQuantity();
+
+    double CalcPrice();
 
 private:
     Product m_Product;

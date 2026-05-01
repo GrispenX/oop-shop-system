@@ -7,7 +7,17 @@ ReceiptItem::ReceiptItem(Product product, int quantity) :
     if(quantity <= 0) throw std::runtime_error("Quantity should be positive");
 }
 
-double ReceiptItem::GetPrice()
+Product ReceiptItem::GetProduct()
+{
+    return m_Product;
+}
+
+int ReceiptItem::GetQuantity()
+{
+    return m_Quantity;
+}
+
+double ReceiptItem::CalcPrice()
 {
     std::shared_ptr<IDiscountStrategy> discount_strat = m_Product.GetDiscount();
     double discount = discount_strat ? discount_strat->CalcDiscount(m_Product.GetPrice(), m_Quantity) : 0.0;

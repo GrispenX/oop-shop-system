@@ -15,6 +15,11 @@ public:
     double GetPrice();
     std::shared_ptr<IDiscountStrategy> GetDiscount();
 
+    void SetID(int id);
+    void SetName(std::string name);
+    void SetPrice(double price);
+    void SetDiscount(std::shared_ptr<IDiscountStrategy> discount);
+
 private:
     int m_ID;
     std::string m_Name;
