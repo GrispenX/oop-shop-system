@@ -11,6 +11,8 @@ enum class ReceiptStatus
     CLOSED
 };
 
+std::ostream& operator<<(std::ostream& os, ReceiptStatus status);
+
 class Receipt
 {
 public:

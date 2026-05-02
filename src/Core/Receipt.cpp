@@ -1,5 +1,24 @@
 #include "Core/Receipt.h"
 
+std::ostream& operator<<(std::ostream& os, ReceiptStatus status)
+{
+    switch (status)
+    {
+    case ReceiptStatus::OPENED:
+        os << "Opened";
+        break;
+
+    case ReceiptStatus::CLOSED:
+        os << "Closed";
+        break;
+    
+    default:
+        os << "Oops";
+        break;
+    }
+    return os;
+}
+
 Receipt::Receipt(int id, time_t timestamp, std::vector<ReceiptItem> items, ReceiptStatus status) :
     m_ID(id),
     m_Timestamp(timestamp),

@@ -5,6 +5,7 @@
 #include "Core/IProductStorage.h"
 #include <memory>
 #include <vector>
+#include <optional>
 
 class ProductService
 {
@@ -14,6 +15,7 @@ public:
     int CreateProduct(std::string name, double price);
     void SetPrice(int product_id, double price);
     void SetName(int product_id, std::string name);
+    std::optional<Product> GetProduct(int product_id);
     std::vector<Product> GetAll();
 
 private:

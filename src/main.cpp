@@ -8,6 +8,8 @@
 #include <iostream>
 #include <unordered_map>
 
+#include "Console/MainView.h"
+
 class InMemProductStorage : public IProductStorage
 {
 public:
@@ -28,7 +30,9 @@ public:
 
     Product GetProduct(int id) override
     {
-        return m_Products.at(id);
+        auto it = m_Products.find(id);
+        if(it == m_Products.end()) throw std::runtime_error("Product does not exist");
+        return it->second;
     }
 
     std::vector<Product> GetProducts(std::function<bool(Product)> predicate) override
@@ -78,7 +82,9 @@ public:
 
     Receipt GetReceipt(int id) override
     {
-        return m_Receipts.at(id);
+        auto it = m_Receipts.find(id);
+        if(it == m_Receipts.end()) throw std::runtime_error("Receipt does not exist");
+        return it->second;
     }
 
     std::vector<Receipt> GetReceipts(std::function<bool(Receipt)> predicate) override
@@ -117,40 +123,29 @@ int main()
     DiscountService disc_serv(prod_stor);
     ReceiptService rece_serv(prod_stor, rece_stor);
 
-    int id1 = prod_serv.CreateProduct("Winr", 200);
+    int id1 = prod_serv.CreateProduct("Wine", 199.90);
     int id2 = prod_serv.CreateProduct("Bread", 30);
     int id3 = prod_serv.CreateProduct("Coockies", 40);
-    prod_serv.SetName(id1, "Wine");
 
     disc_serv.SetDiscount(id1, std::make_shared<RegularDiscount>(0.2));
     disc_serv.SetDiscount(id3, std::make_shared<BundleDiscount>(3, 1.0));
 
-    prod_serv.SetPrice(id3, 50);
+    int r_id = rece_serv.StartNewReceipt();
+    rece_serv.AddItemToReceipt(r_id, id1, 5);
+    rece_serv.AddItemToReceipt(r_id, id2, 10);
+    rece_serv.AddItemToReceipt(r_id, id3, 8);
+    rece_serv.CloseReceipt(r_id);
 
-    rece_serv.CreateReceipt({{id1, 5}, {id2, 10}, {id3, 8}});
 
-    std::cout << "--- Products ---\n";
-    for(auto& p : prod_serv.GetAll())
+
+    Context context {
+        .product_service = std::make_shared<ProductService>(prod_stor),
+        .discount_service = std::make_shared<DiscountService>(prod_stor),
+        .receipt_service = std::make_shared<ReceiptService>(prod_stor, rece_stor)
+    };
+    std::unique_ptr<IView> view = std::make_unique<MainView>(context);
+    while(view)
     {
-        std::cout << "\t" << p.GetID() << ". " << p.GetName() << " " << p.GetPrice() << "$\n";
+        view = std::move(view->Run());
     }
-    std::cout << "\n";
-
-    std::cout << "--- Discounted ---\n";
-    for(auto& dp : disc_serv.GetDiscountedProducts())
-    {
-        std::cout << "\t" << dp.GetID() << ". " << dp.GetName() << "\n";
-    }
-    std::cout << "\n";
-
-    std::cout << "--- Receipts ---\n";
-    for(auto& r : rece_serv.GetAllReceipts())
-    {
-        std::cout << "\t" << r.GetID() << ". " << r.CalcTotal() << "$ Timestamp: " << r.GetTimestamp() << "\n";
-        for(auto& item : r.GetItems())
-        {
-            std::cout << "\t\t" << item.GetQuantity() << "x " << item.GetProduct().GetName() << ": " << item.CalcPrice() << "\n";
-        }
-    }
-    std::cout << "\n";
 }

@@ -7,16 +7,48 @@ ReceiptService::ReceiptService(std::shared_ptr<IProductStorage> product_storage,
 
 }
 
-int ReceiptService::CreateReceipt(std::vector<std::pair<int, int>> items)
+int ReceiptService::StartNewReceipt()
 {
-    std::vector<ReceiptItem> items_to_add;
-    for(auto& [id, quantity] : items)
-    {
-        ReceiptItem item(m_ProductStorage->GetProduct(id), quantity);
-        items_to_add.push_back(item);
-    }
-    Receipt receipt(0, time(nullptr), items_to_add);
+    Receipt receipt(0, time(nullptr), {}, ReceiptStatus::OPENED);
     return m_ReceiptStorage->AddReceipt(receipt);
+}
+
+void ReceiptService::AddItemToReceipt(int receipt_id, int product_id, int quantity)
+{
+    Receipt receipt = m_ReceiptStorage->GetReceipt(receipt_id);
+    if(receipt.GetStatus() == ReceiptStatus::CLOSED) throw std::runtime_error("Can't add item to closed receipt");
+
+    Product product = m_ProductStorage->GetProduct(product_id);
+    ReceiptItem item(product, quantity);
+    receipt.AddItem(item);
+    m_ReceiptStorage->UpdateReceipt(receipt);
+}
+
+void ReceiptService::CloseReceipt(int receipt_id)
+{
+    Receipt receipt = m_ReceiptStorage->GetReceipt(receipt_id);
+    receipt.SetStatus(ReceiptStatus::CLOSED);
+    m_ReceiptStorage->UpdateReceipt(receipt);
+}
+
+void ReceiptService::CancelReceipt(int receipt_id)
+{
+    Receipt receipt = m_ReceiptStorage->GetReceipt(receipt_id);
+    if(receipt.GetStatus() != ReceiptStatus::OPENED) throw std::runtime_error("Receipt should be opened to cancel it");
+    m_ReceiptStorage->RemoveReceipt(receipt_id);
+}
+
+std::optional<Receipt> ReceiptService::GetReceipt(int receipt_id)
+{
+    try
+    {
+        return m_ReceiptStorage->GetReceipt(receipt_id);
+    }
+    catch(const std::exception& e)
+    {
+        return std::nullopt;
+    }
+    
 }
 
 std::vector<Receipt> ReceiptService::GetAllReceipts()

@@ -26,6 +26,18 @@ void ProductService::SetName(int product_id, std::string name)
     m_ProductStorage->UpdateProduct(product);
 }
 
+std::optional<Product> ProductService::GetProduct(int product_id)
+{
+    try
+    {
+        return m_ProductStorage->GetProduct(product_id);
+    }
+    catch(const std::exception& e)
+    {
+        return std::nullopt;
+    }
+}
+
 std::vector<Product> ProductService::GetAll()
 {
     return m_ProductStorage->GetAllProducts();
