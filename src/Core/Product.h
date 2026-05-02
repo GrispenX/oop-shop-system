@@ -10,10 +10,10 @@ class Product
 public:
     Product(int id, std::string name, double price, std::shared_ptr<IDiscountStrategy> discount);
 
-    int GetID();
-    std::string GetName();
-    double GetPrice();
-    std::shared_ptr<IDiscountStrategy> GetDiscount();
+    int GetID() const;
+    std::string GetName() const;
+    double GetPrice() const;
+    std::shared_ptr<IDiscountStrategy> GetDiscount() const;
 
     void SetID(int id);
     void SetName(std::string name);

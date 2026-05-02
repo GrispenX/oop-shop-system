@@ -5,23 +5,33 @@
 #include <vector>
 #include "Core/ReceiptItem.h"
 
+enum class ReceiptStatus
+{
+    OPENED,
+    CLOSED
+};
+
 class Receipt
 {
 public:
-    Receipt(int id, time_t timestamp, std::vector<ReceiptItem> items);
+    Receipt(int id, time_t timestamp, std::vector<ReceiptItem> items, ReceiptStatus status);
     
-    int GetID();
-    time_t GetTimestamp();
-    std::vector<ReceiptItem> GetItems();
+    int GetID() const;
+    time_t GetTimestamp() const;
+    ReceiptStatus GetStatus() const;
+    std::vector<ReceiptItem> GetItems() const;
 
     void SetID(int id);
+    void SetTimestamp(time_t timestamp);
+    void SetStatus(ReceiptStatus status);
     
     void AddItem(ReceiptItem item);
-    double CalcTotal();
+    double CalcTotal() const;
 
 private:
     int m_ID;
     time_t m_Timestamp;
+    ReceiptStatus m_Status;
     std::vector<ReceiptItem> m_Items;
 };
 

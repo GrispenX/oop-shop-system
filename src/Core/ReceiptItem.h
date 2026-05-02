@@ -10,10 +10,10 @@ class ReceiptItem
 public:
     ReceiptItem(Product product, int quantity);
 
-    Product GetProduct();
-    int GetQuantity();
+    Product GetProduct() const;
+    int GetQuantity() const;
 
-    double CalcPrice();
+    double CalcPrice() const;
 
 private:
     Product m_Product;

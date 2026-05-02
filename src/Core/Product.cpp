@@ -10,22 +10,22 @@ Product::Product(int id, std::string name, double price, std::shared_ptr<IDiscou
     if(price <= 0) throw std::runtime_error("Price should be greater than 0");
 }
 
-int Product::GetID()
+int Product::GetID() const
 {
     return m_ID;
 }
 
-std::string Product::GetName()
+std::string Product::GetName() const
 {
     return m_Name;
 }
 
-double Product::GetPrice()
+double Product::GetPrice() const
 {
     return m_Price;
 }
 
-std::shared_ptr<IDiscountStrategy> Product::GetDiscount()
+std::shared_ptr<IDiscountStrategy> Product::GetDiscount() const
 {
     return m_Discount;
 }
