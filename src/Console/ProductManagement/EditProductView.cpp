@@ -2,6 +2,8 @@
 #include "Console/ProductManagement/SelectProductView.h"
 #include "Console/ProductManagement/ProductsView.h"
 #include "Console/ReadWithValidation.h"
+#include "Bussiness/RegularDiscount.h"
+#include "Bussiness/BundleDiscount.h"
 #include <iostream>
 #include <format>
 
@@ -26,13 +28,25 @@ std::unique_ptr<IView> EditProductView::Run()
     std::cout << "ID:    " << p.GetID() << "\n";
     std::cout << "Name:  " << p.GetName() << "\n";
     std::cout << "Price: " << p.GetPrice() << "\n";
+    if(p.GetDiscount() != nullptr)
+    {
+        std::cout << "Discount: " << p.GetDiscount()->GetDescription() << "\n";
+    }
     std::cout << "\n";
     std::cout << "  1. Change name\n";
     std::cout << "  2. Change price\n";
-    std::cout << "  3. Back\n";
+    if(p.GetDiscount() != nullptr)
+    {
+        std::cout << "  3. Remove discount\n";
+    }
+    else
+    {
+        std::cout << "  3. Set discount\n";
+    }
+    std::cout << "  4. Back\n";
     std::cout << "\n";
 
-    int choice = ReadWithValidation<int>("Choice", [](int i) { return i >= 1 && i <= 3; });
+    int choice = ReadWithValidation<int>("Choice", [](int i) { return i >= 1 && i <= 4; });
     
     switch(choice)
     {
@@ -60,6 +74,52 @@ std::unique_ptr<IView> EditProductView::Run()
         }
         std::cout << "\n";
         return std::make_unique<EditProductView>(m_Context, m_ProductID);
+        break;
+
+    case 3:
+        if(p.GetDiscount() != nullptr)
+        {
+            m_Context.discount_service->SetDiscount(m_ProductID, nullptr);
+            return std::make_unique<EditProductView>(m_Context, m_ProductID);
+        }
+        else
+        {
+            int discount_type = ReadWithValidation<int>("Discount type (1 - Regular, 2 - Bundle)", [](int i) {return i >= 1 && i <= 2;});
+            if(discount_type == 1)
+            {
+                double percentage;
+                std::cout << "Percentage (%): ";
+                std::cin >> percentage;
+                try
+                {
+                    m_Context.discount_service->SetDiscount(m_ProductID, std::make_shared<RegularDiscount>(percentage / 100.0));
+                }
+                catch(const std::exception& e)
+                {
+                    std::cout << "\033[1;31m" << e.what() << "\033[0m\n";
+                }
+                
+            }
+            else if(discount_type == 2)
+            {
+                double percentage;
+                int quantity;
+                std::cout << "Percentage (%): ";
+                std::cin >> percentage;
+                std::cout << "Quantity: ";
+                std::cin >> quantity;
+                try
+                {
+                    m_Context.discount_service->SetDiscount(m_ProductID, std::make_shared<BundleDiscount>(quantity, percentage / 100.0));
+                }
+                catch(const std::exception& e)
+                {
+                    std::cout << "\033[1;31m" << e.what() << "\033[0m\n";
+                }
+            }
+            std::cout << "\n";
+            return std::make_unique<EditProductView>(m_Context, m_ProductID);
+        }
         break;
     
     default:

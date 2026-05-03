@@ -38,6 +38,10 @@ std::unique_ptr<IView> ReceiptDetailsView::Run()
         std::cout << std::setw(3) << item.GetQuantity() << "x ";
         std::cout << std::setw(20) << item.GetProduct().GetName() << " ";
         std::cout << std::setw(10) << item.CalcPrice() << "$\n";
+        if(item.GetProduct().GetDiscount() != nullptr)
+        {
+            std::cout << "\t\t\t" << std::setw(20) << item.GetProduct().GetDiscount()->GetDescription() << "\n";
+        }
     }
 
     std::cout << "Total:     " << r.CalcTotal() << "\n";

@@ -8,6 +8,7 @@ class RegularDiscount : public IDiscountStrategy
 public:
     RegularDiscount(double percentage);
     double CalcDiscount(double price, int quantity) override;
+    std::string GetDescription() override;
 
 private:
     double m_DiscountPercentage;
