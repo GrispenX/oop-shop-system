@@ -11,11 +11,11 @@ T ReadWithValidation(std::string prompt, std::function<bool(T)> is_valid)
     while (true)
     {
         std::cout << prompt << ": ";
-        std::string line;
-        std::getline(std::cin, line);
-        std::istringstream iss(line);
         T input;
-        if (iss >> input && is_valid(input)) return input;
+        std::cin >> input;
+        std::cin.clear();
+        std::cin.ignore();
+        if(is_valid(input)) return input;
     }
 }
 
