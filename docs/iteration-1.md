@@ -1,5 +1,7 @@
 # Iteration 1 - ATP Management System
 
+Налаштовано CI/CD Github Actions
+
 Реалізовано кор сутності: Product, ReceiptItem, Receipt з обрахунком загальної вартості
 
 Створено IDiscountStrategy та двавиди зножок RegularDiscount, BundleDiscount
