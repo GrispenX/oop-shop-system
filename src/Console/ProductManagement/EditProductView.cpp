@@ -79,7 +79,7 @@ std::unique_ptr<IView> EditProductView::Run()
     case 3:
         if(p.GetDiscount() != nullptr)
         {
-            m_Context.discount_service->SetDiscount(m_ProductID, nullptr);
+            m_Context.product_service->SetDiscount(m_ProductID, nullptr);
             return std::make_unique<EditProductView>(m_Context, m_ProductID);
         }
         else
@@ -92,7 +92,7 @@ std::unique_ptr<IView> EditProductView::Run()
                 std::cin >> percentage;
                 try
                 {
-                    m_Context.discount_service->SetDiscount(m_ProductID, std::make_shared<RegularDiscount>(percentage / 100.0));
+                    m_Context.product_service->SetDiscount(m_ProductID, std::make_shared<RegularDiscount>(percentage / 100.0));
                 }
                 catch(const std::exception& e)
                 {
@@ -110,7 +110,7 @@ std::unique_ptr<IView> EditProductView::Run()
                 std::cin >> quantity;
                 try
                 {
-                    m_Context.discount_service->SetDiscount(m_ProductID, std::make_shared<BundleDiscount>(quantity, percentage / 100.0));
+                    m_Context.product_service->SetDiscount(m_ProductID, std::make_shared<BundleDiscount>(quantity, percentage / 100.0));
                 }
                 catch(const std::exception& e)
                 {

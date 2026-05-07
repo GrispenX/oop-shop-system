@@ -1,4 +1,4 @@
-#include "Bussiness/ProductService.h"
+#include "Infrastructure/ProductService.h"
 
 ProductService::ProductService(std::shared_ptr<IProductStorage> product_storage) :
     m_ProductStorage(product_storage)
@@ -41,4 +41,11 @@ std::optional<Product> ProductService::GetProduct(int product_id)
 std::vector<Product> ProductService::GetAll()
 {
     return m_ProductStorage->GetAllProducts();
+}
+
+void ProductService::SetDiscount(int product_id, std::shared_ptr<IDiscountStrategy> discount)
+{
+    Product product = m_ProductStorage->GetProduct(product_id);
+    product.SetDiscount(discount);
+    m_ProductStorage->UpdateProduct(product);
 }

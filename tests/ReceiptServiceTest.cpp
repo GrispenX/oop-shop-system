@@ -2,7 +2,7 @@
 #include <gmock/gmock.h>
 #include "../tests/Helpers.h"
 
-#include "Bussiness/ReceiptService.h"
+#include "Infrastructure/ReceiptService.h"
 
 using ::testing::Return;
 using ::testing::_;

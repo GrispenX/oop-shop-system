@@ -1,4 +1,4 @@
-#include "Bussiness/ReceiptService.h"
+#include "Infrastructure/ReceiptService.h"
 
 ReceiptService::ReceiptService(std::shared_ptr<IProductStorage> product_storage, std::shared_ptr<IReceiptStorage> receipt_storage) :
     m_ProductStorage(product_storage),

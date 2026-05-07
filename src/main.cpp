@@ -2,9 +2,8 @@
 #include "Core/IReceiptStorage.h"
 #include "Bussiness/RegularDiscount.h"
 #include "Bussiness/BundleDiscount.h"
-#include "Bussiness/ProductService.h"
-#include "Bussiness/ReceiptService.h"
-#include "Bussiness/DiscountService.h"
+#include "Infrastructure/ProductService.h"
+#include "Infrastructure/ReceiptService.h"
 #include <iostream>
 #include <unordered_map>
 
@@ -120,15 +119,14 @@ int main()
     std::shared_ptr<IReceiptStorage> rece_stor = std::make_shared<InMemReceiptStorage>();
 
     ProductService prod_serv(prod_stor);
-    DiscountService disc_serv(prod_stor);
     ReceiptService rece_serv(prod_stor, rece_stor);
 
     int id1 = prod_serv.CreateProduct("Wine", 199.90);
     int id2 = prod_serv.CreateProduct("Bread", 30);
     int id3 = prod_serv.CreateProduct("Coockies", 40);
 
-    disc_serv.SetDiscount(id1, std::make_shared<RegularDiscount>(0.2));
-    disc_serv.SetDiscount(id3, std::make_shared<BundleDiscount>(3, 1.0));
+    prod_serv.SetDiscount(id1, std::make_shared<RegularDiscount>(0.2));
+    prod_serv.SetDiscount(id3, std::make_shared<BundleDiscount>(3, 1.0));
 
     int r_id = rece_serv.StartNewReceipt();
     rece_serv.AddItemToReceipt(r_id, id1, 5);
@@ -140,7 +138,6 @@ int main()
 
     Context context {
         .product_service = std::make_shared<ProductService>(prod_stor),
-        .discount_service = std::make_shared<DiscountService>(prod_stor),
         .receipt_service = std::make_shared<ReceiptService>(prod_stor, rece_stor)
     };
     std::unique_ptr<IView> view = std::make_unique<MainView>(context);

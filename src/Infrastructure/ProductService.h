@@ -17,6 +17,7 @@ public:
     void SetName(int product_id, std::string name);
     std::optional<Product> GetProduct(int product_id);
     std::vector<Product> GetAll();
+    void SetDiscount(int product_id, std::shared_ptr<IDiscountStrategy> discount);
 
 private:
     std::shared_ptr<IProductStorage> m_ProductStorage;

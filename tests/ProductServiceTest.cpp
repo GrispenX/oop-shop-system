@@ -2,7 +2,7 @@
 #include <gmock/gmock.h>
 #include "../tests/Helpers.h"
 
-#include "Bussiness/ProductService.h"
+#include "Infrastructure/ProductService.h"
 
 using ::testing::Return;
 using ::testing::Throw;

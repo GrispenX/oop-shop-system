@@ -11,6 +11,7 @@ add_executable(${PROJECT_NAME}_test
 target_link_libraries(${PROJECT_NAME}_test PRIVATE
     Core
     Bussiness
+    Infrastructure
 )
 
 target_include_directories(${PROJECT_NAME}_test PRIVATE

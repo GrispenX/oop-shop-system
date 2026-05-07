@@ -1,15 +1,13 @@
 #ifndef SRC_CONSOLE_IVIEW_H_
 #define SRC_CONSOLE_IVIEW_H_
 
-#include "Bussiness/ProductService.h"
-#include "Bussiness/DiscountService.h"
-#include "Bussiness/ReceiptService.h"
+#include "Infrastructure/ProductService.h"
+#include "Infrastructure/ReceiptService.h"
 #include <memory>
 
 struct Context
 {
     std::shared_ptr<ProductService> product_service;
-    std::shared_ptr<DiscountService> discount_service;
     std::shared_ptr<ReceiptService> receipt_service;
 };
 
