@@ -1,7 +1,7 @@
-add_subdirectory(Bussiness)
-add_subdirectory(Console)
 add_subdirectory(Core)
+add_subdirectory(Bussiness)
 add_subdirectory(Infrastructure)
+add_subdirectory(Console)
 
 add_executable(${PROJECT_NAME} main.cpp)
 

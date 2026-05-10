@@ -13,3 +13,5 @@ add_library(Console
     )
 
 target_include_directories(Console PUBLIC ${CMAKE_SOURCE_DIR}/src)
+
+target_link_libraries(Console PUBLIC Core Bussiness Infrastructure)
