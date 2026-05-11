@@ -9,6 +9,7 @@ public:
     RegularDiscount(double percentage);
     double CalcDiscount(double price, int quantity) override;
     std::string GetDescription() override;
+    double GetPercentage();
 
 private:
     double m_DiscountPercentage;

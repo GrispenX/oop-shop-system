@@ -1,4 +1,5 @@
 #include "Infrastructure/JSONReceiptStorage.h"
+#include "Infrastructure/JSONReceiptSerializer.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
 
@@ -11,32 +12,14 @@ JSONReceiptStorage::JSONReceiptStorage(std::filesystem::path path) :
         std::ifstream file(path);
         nlohmann::json j = nlohmann::json::parse(file);
 
-        for(const auto& r : j["receipts"])
+        JSONReceiptSerializer serializer;
+
+        for(const auto& receipt_json : j["receipts"])
         {
-            std::vector<ReceiptItem> items;
-            for(const auto& i : r["items"])
-            {
-                const auto& p = i["product"];
-                Product product(
-                    p["id"].get<int>(),
-                    p["name"].get<std::string>(),
-                    p["price"].get<double>(),
-                    nullptr
-                );
-                int quantity = i["quantity"].get<int>();
-                items.push_back(ReceiptItem(product, quantity));
-            }
-
-            Receipt receipt(
-                r["id"].get<int>(),
-                r["timestamp"].get<time_t>(),
-                items,
-                r["status"].get<ReceiptStatus>()
-            );
-
-            if(receipt.GetID() >= m_NextID) m_NextID = receipt.GetID() + 1;
-
-            m_Receipts.emplace(receipt.GetID(), receipt);
+            Receipt receipt = serializer.Deserialize(receipt_json);
+            int id = receipt.GetID();
+            if(id >= m_NextID) m_NextID = id + 1;
+            m_Receipts.emplace(id, receipt);
         }
 
         file.close();
@@ -48,30 +31,11 @@ JSONReceiptStorage::~JSONReceiptStorage()
     nlohmann::json j;
     j["receipts"] = nlohmann::json::array();
 
-    for(const auto& [id, r] : m_Receipts)
+    JSONReceiptSerializer serializer;
+
+    for(const auto& [id, receipt] : m_Receipts)
     {
-        nlohmann::json receipt_json;
-        receipt_json["id"] = r.GetID();
-        receipt_json["timestamp"] = r.GetTimestamp();
-        receipt_json["status"] = r.GetStatus();
-        receipt_json["items"] = nlohmann::json::array();
-
-        for(const auto& i : r.GetItems())
-        {
-            const Product p = i.GetProduct();
-            receipt_json["items"].push_back({
-                {
-                    "product",
-                    {
-                        {"id", p.GetID()},
-                        {"name", p.GetName()},
-                        {"price", p.GetPrice()}
-                    }
-                },
-                {"quantity", i.GetQuantity()}
-            });
-        }
-
+        nlohmann::json receipt_json = serializer.Serialize(receipt);
         j["receipts"].push_back(receipt_json);
     }
 

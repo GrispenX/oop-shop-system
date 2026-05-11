@@ -1,6 +1,8 @@
 add_library(Infrastructure
     ProductService.cpp
     ReceiptService.cpp
+    JSONProductSerializer.cpp
+    JSONReceiptSerializer.cpp
     JSONProductStorage.cpp
     JSONReceiptStorage.cpp
 )

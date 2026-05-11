@@ -16,3 +16,8 @@ std::string RegularDiscount::GetDescription()
 {
     return std::format("-{}%", m_DiscountPercentage * 100);
 }
+
+double RegularDiscount::GetPercentage()
+{
+    return m_DiscountPercentage;
+}

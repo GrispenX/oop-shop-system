@@ -1,4 +1,5 @@
 #include "Infrastructure/JSONProductStorage.h"
+#include "Infrastructure/JSONProductSerializer.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
 
@@ -11,16 +12,14 @@ JSONProductStorage::JSONProductStorage(std::filesystem::path path) :
         std::ifstream file(path);
         nlohmann::json j = nlohmann::json::parse(file);
 
-        for(const auto& p : j["products"])
+        JSONProductSerializer serializer;
+
+        for(const auto& product_json : j["products"])
         {
-            Product product(
-                p["id"].get<int>(),
-                p["name"].get<std::string>(),
-                p["price"].get<double>(),
-                nullptr
-            );
-            if(product.GetID() >= m_NextID) m_NextID = product.GetID() + 1;
-            m_Products.emplace(product.GetID(), product);
+            Product product = serializer.Deserialize(product_json);
+            int id = product.GetID();
+            if(id >= m_NextID) m_NextID = id + 1;
+            m_Products.emplace(id, product);
         }
 
         file.close();
@@ -32,13 +31,12 @@ JSONProductStorage::~JSONProductStorage()
     nlohmann::json j;
     j["products"] = nlohmann::json::array();
 
-    for(const auto& [id, p] : m_Products)
+    JSONProductSerializer serializer;
+
+    for(const auto& [id, product] : m_Products)
     {
-        j["products"].push_back({
-            {"id", p.GetID()},
-            {"name", p.GetName()},
-            {"price", p.GetPrice()}
-        });
+        nlohmann::json product_json = serializer.Serialize(product);
+        j["products"].push_back(product_json);
     }
 
     std::ofstream file(m_Path);

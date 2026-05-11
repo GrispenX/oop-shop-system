@@ -9,6 +9,8 @@ public:
     BundleDiscount(int min_quantity, double percentage);
     double CalcDiscount(double price, int quantity);
     std::string GetDescription() override;
+    int GetMinQuantity();
+    double GetPercentage();
 
 private:
     int m_MinQuantity;
