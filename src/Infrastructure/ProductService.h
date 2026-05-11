@@ -1,28 +1,26 @@
 #ifndef SRC_BUSSINESS_PRODUCTSERVICE_H_
 #define SRC_BUSSINESS_PRODUCTSERVICE_H_
 
-#include "Core/Product.h"
+#include "Infrastructure/IProductService.h"
 #include "Core/IProductStorage.h"
 #include "Core/IInventoryStorage.h"
-#include <memory>
-#include <vector>
-#include <optional>
 
-class ProductService
+
+class ProductService : public IProductService
 {
 public:
     ProductService(std::shared_ptr<IProductStorage> product_storage, std::shared_ptr<IInventoryStorage> inventory_storage);
     
-    int CreateProduct(std::string name, double price);
-    void SetPrice(int product_id, double price);
-    void SetName(int product_id, std::string name);
-    void SetDiscount(int product_id, std::shared_ptr<IDiscountStrategy> discount);
-    std::optional<Product> GetProduct(int product_id);
-    std::vector<Product> GetAll();
+    int CreateProduct(std::string name, double price) override;
+    void SetPrice(int product_id, double price) override;
+    void SetName(int product_id, std::string name) override;
+    void SetDiscount(int product_id, std::shared_ptr<IDiscountStrategy> discount) override;
+    std::optional<Product> GetProduct(int product_id) override;
+    std::vector<Product> GetAll() override;
 
-    int GetStockAmount(int product_id);
-    void AddStock(int product_id, int amount);
-    void RemoveStock(int product_id, int amount);
+    int GetStockAmount(int product_id) override;
+    void AddStock(int product_id, int amount) override;
+    void RemoveStock(int product_id, int amount) override;
 
 private:
     std::shared_ptr<IProductStorage> m_ProductStorage;

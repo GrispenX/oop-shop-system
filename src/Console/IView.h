@@ -1,14 +1,14 @@
 #ifndef SRC_CONSOLE_IVIEW_H_
 #define SRC_CONSOLE_IVIEW_H_
 
-#include "Infrastructure/ProductService.h"
-#include "Infrastructure/ReceiptService.h"
+#include "Infrastructure/IProductService.h"
+#include "Infrastructure/IReceiptService.h"
 #include <memory>
 
 struct Context
 {
-    std::shared_ptr<ProductService> product_service;
-    std::shared_ptr<ReceiptService> receipt_service;
+    std::shared_ptr<IProductService> product_service;
+    std::shared_ptr<IReceiptService> receipt_service;
 };
 
 class IView
