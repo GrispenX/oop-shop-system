@@ -1,8 +1,9 @@
 #include "Infrastructure/ReceiptService.h"
 
-ReceiptService::ReceiptService(std::shared_ptr<IProductStorage> product_storage, std::shared_ptr<IReceiptStorage> receipt_storage) :
+ReceiptService::ReceiptService(std::shared_ptr<IProductStorage> product_storage, std::shared_ptr<IReceiptStorage> receipt_storage, std::shared_ptr<IProductService> product_service) :
     m_ProductStorage(product_storage),
-    m_ReceiptStorage(receipt_storage)
+    m_ReceiptStorage(receipt_storage),
+    m_ProductService(product_service)
 {
 
 }
@@ -19,6 +20,7 @@ void ReceiptService::AddItemToReceipt(int receipt_id, int product_id, int quanti
     if(receipt.GetStatus() == ReceiptStatus::CLOSED) throw std::runtime_error("Can't add item to closed receipt");
 
     Product product = m_ProductStorage->GetProduct(product_id);
+    m_ProductService->RemoveStock(product_id, quantity);
     ReceiptItem item(product, quantity);
     receipt.AddItem(item);
     m_ReceiptStorage->UpdateReceipt(receipt);
