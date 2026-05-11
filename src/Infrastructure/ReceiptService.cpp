@@ -37,6 +37,10 @@ void ReceiptService::CancelReceipt(int receipt_id)
 {
     Receipt receipt = m_ReceiptStorage->GetReceipt(receipt_id);
     if(receipt.GetStatus() != ReceiptStatus::OPENED) throw std::runtime_error("Receipt should be opened to cancel it");
+    for(auto item : receipt.GetItems())
+    {
+        m_ProductService->AddStock(item.GetProduct().GetID(), item.GetQuantity());
+    }
     m_ReceiptStorage->RemoveReceipt(receipt_id);
 }
 
