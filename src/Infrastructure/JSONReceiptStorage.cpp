@@ -41,6 +41,7 @@ JSONReceiptStorage::~JSONReceiptStorage()
 
     std::ofstream file(m_Path);
     file << j.dump(4);
+    file.close();
 }
 
 int JSONReceiptStorage::AddReceipt(Receipt receipt)

@@ -5,6 +5,7 @@ add_library(Infrastructure
     JSONReceiptSerializer.cpp
     JSONProductStorage.cpp
     JSONReceiptStorage.cpp
+    JSONInventoryStorage.cpp
 )
 
 target_include_directories(Infrastructure PUBLIC ${CMAKE_SOURCE_DIR}/src)

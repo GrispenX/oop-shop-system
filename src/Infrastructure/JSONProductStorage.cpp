@@ -41,6 +41,7 @@ JSONProductStorage::~JSONProductStorage()
 
     std::ofstream file(m_Path);
     file << j.dump(4);
+    file.close();
 }
 
 int JSONProductStorage::AddProduct(Product product)
