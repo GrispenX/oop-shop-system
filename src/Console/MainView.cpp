@@ -11,6 +11,19 @@ MainView::MainView(Context context) :
 
 }
 
+/**
+ * @brief Display the main menu and transfer control to the selected view.
+ *
+ * Presents the ATP Management System menu with options for Products, Receipts,
+ * Cashback & customers, and Quit, then returns the view corresponding to the
+ * user's selection.
+ *
+ * @return std::unique_ptr<IView> Pointer to the chosen view:
+ *         - `ProductsView` for option 1,
+ *         - `ReceiptsView` for option 2,
+ *         - `CashbackView` for option 3,
+ *         or `nullptr` when Quit (option 4) is selected.
+ */
 std::unique_ptr<IView> MainView::Run()
 {
     std::cout << "===== ATP Management System =====\n";

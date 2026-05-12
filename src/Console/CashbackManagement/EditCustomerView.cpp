@@ -4,6 +4,12 @@
 #include <iostream>
 #include <iomanip>
 
+/**
+ * @brief Construct an EditCustomerView for editing a specific customer.
+ *
+ * @param context Application context used to access services (e.g., cashback_service).
+ * @param customer_id Identifier of the customer to edit.
+ */
 EditCustomerView::EditCustomerView(Context context, int customer_id) :
     m_Context(context),
     m_CustomerID(customer_id)
@@ -11,6 +17,20 @@ EditCustomerView::EditCustomerView(Context context, int customer_id) :
     
 }
 
+/**
+ * @brief Run the edit-customer console view to inspect and modify a customer's basic details.
+ *
+ * Displays the customer's ID, name, surname, and cashback balance, then prompts the user to
+ * choose between setting the name, setting the surname, or returning to the previous view.
+ * When the user chooses to set a field, the view reads the new value from standard input and
+ * updates the customer via the cashback service.
+ *
+ * If the customer cannot be found, an error message is printed and the view navigates back.
+ *
+ * @return std::unique_ptr<IView> Pointer to the next view:
+ * - an EditCustomerView for the same customer to continue editing after an update,
+ * - a CashbackView when the user selects "Back" or when the customer was not found.
+ */
 std::unique_ptr<IView> EditCustomerView::Run()
 {
     std::optional<Customer> customer = m_Context.cashback_service->GetCustomer(m_CustomerID);

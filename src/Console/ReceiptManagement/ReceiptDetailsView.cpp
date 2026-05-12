@@ -6,6 +6,12 @@
 #include <iomanip>
 #include <format>
 
+/**
+ * @brief Constructs a view for displaying and interacting with a specific receipt.
+ *
+ * @param context Application context providing services (receipt service, cashback service, navigation, and I/O) used by the view.
+ * @param receipt_id Identifier of the receipt this view will display and operate on.
+ */
 ReceiptDetailsView::ReceiptDetailsView(Context context, int receipt_id) :
     m_Context(context),
     m_ReceiptID(receipt_id)
@@ -13,6 +19,19 @@ ReceiptDetailsView::ReceiptDetailsView(Context context, int receipt_id) :
 
 }
 
+/**
+ * @brief Display receipt details and present an interactive menu of actions for the receipt.
+ *
+ * Shows the receipt header, line items, total, and optional customer information (including used cashback).
+ * If the receipt is not found or not open, navigates to the appropriate view without presenting the menu.
+ * For an open receipt, presents options to add an item, close (optionally using cashback), cancel, set a customer, or go back,
+ * and returns the view corresponding to the selected action.
+ *
+ * @return std::unique_ptr<IView> A pointer to the next view to display:
+ *         - SelectReceiptView when the receipt cannot be found.
+ *         - ReceiptsView after navigating back or after closing/cancelling when appropriate.
+ *         - ReceiptDetailsView to redisplay the same receipt after certain operations or errors.
+ */
 std::unique_ptr<IView> ReceiptDetailsView::Run()
 {
     std::optional<Receipt> receipt = m_Context.receipt_service->GetReceipt(m_ReceiptID);

@@ -1,6 +1,25 @@
 #ifndef SRC_CORE_IINVENTORYSTORAGE_H_
 #define SRC_CORE_IINVENTORYSTORAGE_H_
 
+/**
+ * Interface for persistent inventory stock operations.
+ *
+ * Implementations are responsible for storing and retrieving stock amounts for products.
+ */
+
+/**
+ * Retrieve the current stock level for the specified product.
+ *
+ * @param product_id Identifier of the product whose stock to retrieve.
+ * @returns Current stock amount for the product.
+ */
+
+/**
+ * Set the stock level for the specified product.
+ *
+ * @param product_id Identifier of the product whose stock to set.
+ * @param amount New stock amount to store for the product.
+ */
 class IInventoryStorage
 {
 public:

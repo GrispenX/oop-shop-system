@@ -7,6 +7,14 @@
 #include "Infrastructure/CashbackService.h"
 #include "Console/MainView.h"
 
+/**
+ * @brief Initialize storage and service dependencies, build the application context, and run the UI loop.
+ *
+ * The program constructs JSON-backed storages and service instances, assembles them into a Context,
+ * creates the initial MainView, and repeatedly runs view transitions until the UI loop ends.
+ *
+ * @return int Process exit code: `0` on normal termination.
+ */
 int main()
 {
     std::shared_ptr<IProductStorage> product_storage = std::make_shared<JSONProductStorage>("products.json");

@@ -1,5 +1,16 @@
 #include "Infrastructure/JSONProductSerializer.h"
 
+/**
+ * @brief Serialize a Product into a JSON representation that includes nested discount data.
+ *
+ * The resulting JSON contains the product fields "id", "name", and "price", and a nested
+ * "discount" object whose "type" is one of "none", "regular", or "bundle". When "regular",
+ * the discount object contains "percentage". When "bundle", it contains "min_quantity" and "percentage".
+ *
+ * @return nlohmann::json JSON object with keys: "id", "name", "price", and "discount".
+ *
+ * @throws std::runtime_error If the product's discount exists but is of an unrecognized runtime type.
+ */
 nlohmann::json JSONProductSerializer::Serialize(Product product)
 {    
     nlohmann::json discount_json;
@@ -32,6 +43,20 @@ nlohmann::json JSONProductSerializer::Serialize(Product product)
     };
 }
 
+/**
+ * Deserialize a Product from a JSON object.
+ *
+ * Expects product_json to contain:
+ * - "id" (int), "name" (string), and "price" (double).
+ * - A nested "discount" object with a "type" string:
+ *   - "none" — no discount.
+ *   - "regular" — requires "percentage" (double).
+ *   - "bundle" — requires "min_quantity" (int) and "percentage" (double).
+ *
+ * @param product_json JSON object containing the product fields described above.
+ * @return Product Constructed Product with the parsed id, name, price, and discount strategy.
+ * @throws std::runtime_error If the discount "type" is unrecognized.
+ */
 Product JSONProductSerializer::Deserialize(nlohmann::json product_json)
 {
     int id = product_json["id"].get<int>();

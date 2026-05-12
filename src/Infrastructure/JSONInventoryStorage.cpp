@@ -2,6 +2,15 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 
+/**
+ * @brief Initialize storage with a JSON file path and load existing inventory if present.
+ *
+ * The provided filesystem path is stored for later persistence. If a file exists at
+ * the path, its JSON content is parsed and the entries in the top-level `"inventory"`
+ * array are loaded into the internal stock map as `product_id` → `in_stock`.
+ *
+ * @param path Filesystem path to the JSON file used for persisting inventory data.
+ */
 JSONInventoryStorage::JSONInventoryStorage(std::filesystem::path path) :
     m_Path(path)
 {
@@ -19,6 +28,13 @@ JSONInventoryStorage::JSONInventoryStorage(std::filesystem::path path) :
     }
 }
 
+/**
+ * @brief Persists current inventory to the configured JSON file path on destruction.
+ *
+ * The destructor serializes the in-memory stock map into a JSON object with an
+ * "inventory" array; each entry is an object with `product_id` and `in_stock`
+ * fields. The resulting JSON is written to `m_Path` with 4-space indentation.
+ */
 JSONInventoryStorage::~JSONInventoryStorage()
 {
     nlohmann::json j;
@@ -37,6 +53,13 @@ JSONInventoryStorage::~JSONInventoryStorage()
     file.close();
 }
 
+/**
+ * @brief Retrieve the current stock quantity for the specified product.
+ *
+ * @param product_id Identifier of the product whose stock is requested.
+ * @return int Current stock quantity for the product.
+ * @throws std::runtime_error If the product_id is not present in storage.
+ */
 int JSONInventoryStorage::GetStock(int product_id)
 {
     auto it = m_Stock.find(product_id);
@@ -44,6 +67,12 @@ int JSONInventoryStorage::GetStock(int product_id)
     return it->second;
 }
 
+/**
+ * @brief Set the stock quantity for a product in the internal inventory.
+ *
+ * @param product_id ID of the product to update.
+ * @param amount New stock quantity for the product.
+ */
 void JSONInventoryStorage::SetStock(int product_id, int amount)
 {
     m_Stock.insert_or_assign(product_id, amount);

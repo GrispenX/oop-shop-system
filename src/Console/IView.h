@@ -13,6 +13,11 @@ struct Context
     std::shared_ptr<ICashbackService> cashback_service;
 };
 
+/**
+ * Execute the view's interaction and return the next view to run.
+ *
+ * @returns std::unique_ptr<IView> owning the next view to execute; `nullptr` to indicate no further view (exit).
+ */
 class IView
 {
 public:

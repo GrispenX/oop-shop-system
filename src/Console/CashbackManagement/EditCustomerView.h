@@ -3,6 +3,20 @@
 
 #include "Console/IView.h"
 
+/**
+ * View used to edit an existing customer within the cashback management console.
+ */
+
+/**
+ * Construct an EditCustomerView for a specific customer.
+ * @param context Application context providing access to services and state required by the view.
+ * @param customer_id Identifier of the customer to be edited.
+ */
+
+/**
+ * Execute the view's interaction flow and produce the next view.
+ * @returns A unique_ptr to the next IView to display, or `nullptr` to terminate the flow.
+ */
 class EditCustomerView : public IView
 {
 public:

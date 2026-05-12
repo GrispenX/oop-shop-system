@@ -2,6 +2,17 @@
 
 #include <iostream>
 
+/**
+ * @brief Serialize a Receipt into a JSON object.
+ *
+ * The resulting JSON contains the receipt's `id`, `timestamp`, `status`, and an
+ * `items` array where each element has `product` (product JSON) and `quantity`.
+ * If the receipt has a customer ID, the JSON also includes `customer_id` and
+ * `used_cashback`.
+ *
+ * @param receipt Receipt to serialize.
+ * @return nlohmann::json JSON object representing the receipt.
+ */
 nlohmann::json JSONReceiptSerializer::Serialize(Receipt receipt)
 {
     JSONProductSerializer product_serializer;
@@ -32,6 +43,18 @@ nlohmann::json JSONReceiptSerializer::Serialize(Receipt receipt)
     return receipt_json;
 }
 
+/**
+ * @brief Reconstructs a Receipt from its JSON representation.
+ *
+ * Parses the given JSON to produce a Receipt with its id, timestamp, status,
+ * and list of items (each with product and quantity). If the JSON contains
+ * customer information, the resulting Receipt will include `customer_id` and
+ * `used_cashback`; otherwise `customer_id` will be empty and `used_cashback`
+ * will be 0.
+ *
+ * @param receipt_json JSON object representing a receipt.
+ * @return Receipt The deserialized Receipt.
+ */
 Receipt JSONReceiptSerializer::Deserialize(nlohmann::json receipt_json)
 {
     JSONProductSerializer product_serializer;
