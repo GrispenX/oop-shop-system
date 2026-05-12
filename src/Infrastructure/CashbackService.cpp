@@ -12,6 +12,19 @@ int CashbackService::CreateCustomer(std::string name, std::string surname, std::
     return m_CustomerStorage->Add(customer);
 }
 
+std::optional<Customer> CashbackService::GetCustomer(int customer_id)
+{
+    try
+    {
+        return m_CustomerStorage->Get(customer_id);
+    }
+    catch(const std::exception& e)
+    {
+        return std::nullopt;
+    }
+    
+}
+
 std::vector<Customer> CashbackService::GetAllCustomers()
 {
     return m_CustomerStorage->GetAll();

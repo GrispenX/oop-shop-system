@@ -11,7 +11,8 @@ public:
 
     virtual int StartNewReceipt() = 0;
     virtual void AddItemToReceipt(int receipt_id, int product_id, int quantity) = 0;
-    virtual void CloseReceipt(int receipt_id) = 0;
+    virtual void AddCustomerToReceipt(int receipt_id, int customer_id) = 0;
+    virtual void CloseReceipt(int receipt_id, double use_cashback) = 0;
     virtual void CancelReceipt(int receipt_id) = 0;
     virtual std::optional<Receipt> GetReceipt(int receipt_id) = 0;
     virtual std::vector<Receipt> GetAllReceipts() = 0;

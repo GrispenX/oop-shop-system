@@ -4,6 +4,7 @@
 #include "Console/ReadWithValidation.h"
 #include <iostream>
 #include <iomanip>
+#include <format>
 
 ReceiptDetailsView::ReceiptDetailsView(Context context, int receipt_id) :
     m_Context(context),
@@ -46,6 +47,20 @@ std::unique_ptr<IView> ReceiptDetailsView::Run()
 
     std::cout << "Total:     " << r.CalcTotal() << "\n";
 
+    std::optional<int> customer_id = r.GetCustomerID();
+    if(customer_id.has_value())
+    {
+        std::optional<Customer> customer = m_Context.cashback_service->GetCustomer(customer_id.value());
+        if(customer.has_value())
+        {
+            std::cout << "Customer: " << std::format("{}. {} {}\n", customer->GetID(), customer->GetName(), customer->GetSurname());
+            if(r.GetUsedCashback() > 0)
+            {
+                std::cout << "Used cashback: " << r.GetUsedCashback() << "$\n";
+            }
+        }
+    }
+
     if(r.GetStatus() != ReceiptStatus::OPENED)
     {
         std::cout << "\n";
@@ -56,10 +71,11 @@ std::unique_ptr<IView> ReceiptDetailsView::Run()
     std::cout << "  1. Add item\n";
     std::cout << "  2. Close receipt\n";
     std::cout << "  3. Cancel receipt\n";
-    std::cout << "  4. Back\n";
+    std::cout << "  4. Set customer\n";
+    std::cout << "  5. Back\n";
     std::cout << "\n";
 
-    int choice = ReadWithValidation<int>("Choice", [](int i) { return i >= 1 && i <= 4; });
+    int choice = ReadWithValidation<int>("Choice", [](int i) { return i >= 1 && i <= 5; });
     
     switch (choice)
     {
@@ -83,18 +99,31 @@ std::unique_ptr<IView> ReceiptDetailsView::Run()
         break;
     }
 
-    case 2:
+    case 2: {
+        double use_cashback = 0;
+        if(customer_id.has_value())
+        {
+            std::optional<Customer> customer = m_Context.cashback_service->GetCustomer(customer_id.value());
+            if(customer.has_value())
+            {
+                std::cout << "How much cashback would you like to use: ";
+                std::cin >> use_cashback;
+            }
+        }
         try
         {
-            m_Context.receipt_service->CloseReceipt(m_ReceiptID);
+            m_Context.receipt_service->CloseReceipt(m_ReceiptID, use_cashback);
         }
         catch(const std::exception& e)
         {
             std::cout << "\033[1;31m" << e.what() << "\033[0m\n";
+            std::cout << "\n";
+            return std::make_unique<ReceiptDetailsView>(m_Context, m_ReceiptID);
         }
         std::cout << "\n";
         return std::make_unique<ReceiptsView>(m_Context);
         break;
+    }
 
     case 3:
         try
@@ -109,6 +138,23 @@ std::unique_ptr<IView> ReceiptDetailsView::Run()
         return std::make_unique<ReceiptsView>(m_Context);
         break;
     
+    case 4: {
+        int customer_id;
+        std::cout << "Customer ID: ";
+        std::cin >> customer_id;
+        try
+        {
+            m_Context.receipt_service->AddCustomerToReceipt(m_ReceiptID, customer_id);
+        }
+        catch(const std::exception& e)
+        {
+            std::cout << "\033[1;31m" << e.what() << "\033[0m\n";
+        }
+        std::cout << "\n";
+        return std::make_unique<ReceiptDetailsView>(m_Context, m_ReceiptID);
+        break;
+    }
+
     default:
         std::cout << "\n";
         return std::make_unique<ReceiptsView>(m_Context);

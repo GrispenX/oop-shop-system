@@ -3,6 +3,7 @@
 
 #include "Core/Customer.h"
 #include <vector>
+#include <optional>
 
 class ICashbackService
 {
@@ -10,6 +11,7 @@ public:
     virtual ~ICashbackService() = default;
 
     virtual int CreateCustomer(std::string name, std::string surname, std::shared_ptr<ICashbackStrategy> cashback_strategy) = 0;
+    virtual std::optional<Customer> GetCustomer(int customer_id) = 0;
     virtual std::vector<Customer> GetAllCustomers() = 0;
     // virtual void SetCustomerName(std::string name) = 0;
     // virtual void SetCustomerSurname(std::string surname) = 0;
