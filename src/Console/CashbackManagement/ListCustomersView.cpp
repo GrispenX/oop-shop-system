@@ -4,12 +4,27 @@
 #include <iomanip>
 #include <format>
 
+/**
+ * @brief Constructs a view that lists customers using the provided application context.
+ *
+ * Stores the given Context in the view for use when rendering the customers list.
+ *
+ * @param context Application context providing services and configuration required by the view.
+ */
 ListCustomersView::ListCustomersView(Context context) :
     m_Context(context)
 {
 
 }
 
+/**
+ * @brief Displays the customers list on the console and advances to the cashback view.
+ *
+ * Prints a table header and a row for each customer obtained from the current context's
+ * cashback service, then returns control to the cashback view.
+ *
+ * @return std::unique_ptr<IView> Owner of a CashbackView initialized with the same Context.
+ */
 std::unique_ptr<IView> ListCustomersView::Run()
 {
     std::cout << "===== Customers list =====\n";

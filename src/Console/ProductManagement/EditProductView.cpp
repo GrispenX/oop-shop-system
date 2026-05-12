@@ -14,6 +14,16 @@ EditProductView::EditProductView(Context context, int product_id) :
 
 }
 
+/**
+ * @brief Present an interactive product-management menu for the current product and return the next view.
+ *
+ * Displays product details and options to change name, change price, restock, set/remove discounts, or go back.
+ *
+ * @return std::unique_ptr<IView> Pointer to the next view:
+ * - `SelectProductView` if the product is not found.
+ * - `ProductsView` when the user chooses Back.
+ * - A new `EditProductView` for the same product to continue editing after performing an action.
+ */
 std::unique_ptr<IView> EditProductView::Run()
 {
     std::optional<Product> product = m_Context.product_service->GetProduct(m_ProductID);

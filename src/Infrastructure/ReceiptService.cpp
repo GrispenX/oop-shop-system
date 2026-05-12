@@ -1,5 +1,13 @@
 #include "Infrastructure/ReceiptService.h"
 
+/**
+ * @brief Initializes the ReceiptService with its required storage and service dependencies.
+ *
+ * @param product_storage Storage backend for product data used to load product information.
+ * @param receipt_storage Storage backend for receipts used to persist and retrieve receipts.
+ * @param product_service Service used to modify product inventory (add/remove stock).
+ * @param cashback_service Service used to query customers and manage cashback balances.
+ */
 ReceiptService::ReceiptService(
     std::shared_ptr<IProductStorage> product_storage,
     std::shared_ptr<IReceiptStorage> receipt_storage,
@@ -20,6 +28,19 @@ int ReceiptService::StartNewReceipt()
     return m_ReceiptStorage->AddReceipt(receipt);
 }
 
+/**
+ * @brief Adds a product item to an opened receipt and decrements inventory.
+ *
+ * Adds the specified product and quantity to the receipt identified by `receipt_id`,
+ * removes that quantity from product stock, and persists the updated receipt.
+ *
+ * @param receipt_id ID of the receipt to modify.
+ * @param product_id ID of the product to add.
+ * @param quantity Number of units to add; must be greater than zero.
+ *
+ * @throws std::runtime_error if the receipt is closed.
+ * @throws std::exception Propagates exceptions from storage or service calls (for example: product not found or insufficient stock).
+ */
 void ReceiptService::AddItemToReceipt(int receipt_id, int product_id, int quantity)
 {
     Receipt receipt = m_ReceiptStorage->GetReceipt(receipt_id);
@@ -32,6 +53,16 @@ void ReceiptService::AddItemToReceipt(int receipt_id, int product_id, int quanti
     m_ReceiptStorage->UpdateReceipt(receipt);
 }
 
+/**
+ * @brief Associates an existing customer with an open receipt for cashback purposes.
+ *
+ * Sets the receipt's customer ID to the specified customer and persists the change.
+ *
+ * @param receipt_id ID of the receipt to update.
+ * @param customer_id ID of the customer to associate with the receipt.
+ * @throws std::runtime_error If the receipt is closed.
+ * @throws std::runtime_error If the customer does not exist.
+ */
 void ReceiptService::AddCustomerToReceipt(int receipt_id, int customer_id)
 {
     Receipt receipt = m_ReceiptStorage->GetReceipt(receipt_id);
@@ -42,6 +73,18 @@ void ReceiptService::AddCustomerToReceipt(int receipt_id, int customer_id)
     m_ReceiptStorage->UpdateReceipt(receipt);
 }
 
+/**
+ * @brief Closes a receipt, optionally applies cashback, awards cashback to the customer, and persists the updated receipt.
+ *
+ * If `use_cashback` is non-zero, a customer must be associated with the receipt and the specified amount
+ * will be deducted from that customer's cashback balance. If a customer is present, the receipt's total
+ * amount will be credited as new cashback. The receipt's status is set to `CLOSED` and the change is saved.
+ *
+ * @param receipt_id ID of the receipt to close.
+ * @param use_cashback Amount of cashback to apply to the receipt; must be greater than or equal to zero.
+ * @throws std::runtime_error if `use_cashback` is less than zero or if `use_cashback` is non-zero but the receipt has no associated customer.
+ * @throws std::exception Propagates exceptions thrown by the cashback service when applying cashback; if applying cashback fails the receipt's used cashback is reset before the exception propagates.
+ */
 void ReceiptService::CloseReceipt(int receipt_id, double use_cashback)
 {
     if(use_cashback < 0) throw std::runtime_error("Cashback shouldn't be less than 0");
@@ -74,6 +117,13 @@ void ReceiptService::CloseReceipt(int receipt_id, double use_cashback)
     m_ReceiptStorage->UpdateReceipt(receipt);
 }
 
+/**
+ * @brief Cancels an opened receipt, restores stock for each item, and removes the receipt.
+ *
+ * @param receipt_id ID of the receipt to cancel.
+ * @throws std::runtime_error if the receipt is not in OPENED status.
+ * @throws std::exception Propagates exceptions thrown by the product/receipt storage or services.
+ */
 void ReceiptService::CancelReceipt(int receipt_id)
 {
     Receipt receipt = m_ReceiptStorage->GetReceipt(receipt_id);

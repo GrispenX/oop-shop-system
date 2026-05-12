@@ -4,6 +4,17 @@
 #include "Core/Customer.h"
 #include <nlohmann/json.hpp>
 
+/**
+ * Convert a Customer into its JSON representation.
+ * @param customer Customer object to serialize.
+ * @returns A nlohmann::json containing the customer's data.
+ */
+
+/**
+ * Construct a Customer from its JSON representation.
+ * @param customer_json JSON value containing the customer's data.
+ * @returns A Customer built from the provided JSON.
+ */
 class JSONCustomerSerializer
 {
 public:

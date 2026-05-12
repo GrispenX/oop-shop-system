@@ -4,6 +4,49 @@
 #include "Core/Receipt.h"
 #include <optional>
 
+/**
+ * Interface for managing receipts lifecycle and retrieval.
+ */
+
+/**
+ * Start a new receipt and reserve an identifier for further operations.
+ * @returns Identifier of the newly created receipt.
+ */
+ 
+/**
+ * Add a product with the specified quantity to an existing receipt.
+ * @param receipt_id Identifier of the receipt to modify.
+ * @param product_id Identifier of the product to add.
+ * @param quantity Quantity of the product to add (must be positive).
+ */
+ 
+/**
+ * Associate a customer with an existing receipt.
+ * @param receipt_id Identifier of the receipt to modify.
+ * @param customer_id Identifier of the customer to associate.
+ */
+ 
+/**
+ * Finalize an existing receipt, applying the specified cashback usage amount.
+ * @param receipt_id Identifier of the receipt to close.
+ * @param use_cashback Amount of cashback to apply to the receipt total.
+ */
+ 
+/**
+ * Cancel an existing receipt.
+ * @param receipt_id Identifier of the receipt to cancel.
+ */
+ 
+/**
+ * Retrieve a receipt by its identifier.
+ * @param receipt_id Identifier of the receipt to retrieve.
+ * @returns `std::optional<Receipt>` containing the receipt if found, empty otherwise.
+ */
+ 
+/**
+ * Retrieve all receipts currently stored.
+ * @returns A vector containing all stored receipts.
+ */
 class IReceiptService
 {
 public:

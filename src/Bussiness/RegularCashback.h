@@ -3,6 +3,12 @@
 
 #include "Core/ICashbackStrategy.h"
 
+/**
+ * Calculate the cashback amount for a receipt using the regular cashback rate.
+ *
+ * @param receipt_total Total amount of the receipt in monetary units.
+ * @returns Cashback amount equal to receipt_total multiplied by the regular rate (0.05).
+ */
 class RegularCashback : public ICashbackStrategy
 {
 public:

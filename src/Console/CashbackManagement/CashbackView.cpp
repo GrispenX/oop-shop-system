@@ -5,12 +5,28 @@
 #include "Console/CashbackManagement/EditCustomerView.h"
 #include "Bussiness/RegularCashback.h"
 
+/**
+ * @brief Constructs a CashbackView and stores the provided application context.
+ *
+ * @param context Application context containing services and configuration used by the view; copied into the view's internal `m_Context`.
+ */
 CashbackView::CashbackView(Context context) :
     m_Context(context)
 {
 
 }
 
+/**
+ * @brief Displays the "Cashback & Customers" menu, reads a validated choice, and transitions to the selected view.
+ *
+ * Presents options to list customers, add a customer, edit a customer, or go back. When adding a customer the method prompts for name and surname before attempting creation.
+ *
+ * @return std::unique_ptr<IView> Pointer to the next view:
+ * - ListCustomersView for option 1.
+ * - CashbackView (re-displays this menu) after attempting to add a customer (option 2).
+ * - EditCustomerView constructed with the entered customer ID for option 3.
+ * - MainView for option 4 (back).
+ */
 std::unique_ptr<IView> CashbackView::Run()
 {
     std::cout << "===== Cashback & Customers =====\n";
