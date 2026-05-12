@@ -37,15 +37,6 @@ direction TB
 	    +string GetDescription()
     }
 
-    class Receipt {
-	    -int m_ID ~get/set~
-	    -time m_Timestamp ~get/set~
-	    -ReceiptStatus m_Status ~get/set~
-	    -ReceiptItem[] m_Items ~get~
-	    +void AddItem(ReceiptItem item)
-	    +double CalcTotal()
-    }
-
     class ReceiptStatus {
 	    +OPENED
 	    +CLOSED
@@ -143,10 +134,86 @@ direction TB
 	    +Receipt[] GetAllReceipts()
     }
 
+    class ICashbackStrategy {
+	    +double CalcCashback(double receipt_total)
+    }
+
+    class Customer {
+	    -int m_ID ~get/set~
+	    -string m_Name ~get/set~
+	    -string m_Surname ~get/set~
+	    -double m_CahsbackBalance ~get/set~
+	    -ICashbackStrategy m_CashbackStrat ~get/set~
+    }
+
+    class ICustomerStorage {
+	    +int Add(Customer customer)
+	    +void Update(Customer customer)
+	    +Customer Get(int id)
+	    +Customer[] Get(function~bool(Customer)~ predicate)
+	    +Customer[] GetAll()
+	    +void Remove(int id)
+    }
+
+    class Receipt {
+	    -int m_ID ~get/set~
+	    -time m_Timestamp ~get/set~
+	    -ReceiptStatus m_Status ~get/set~
+	    -ReceiptItem[] m_Items ~get~
+	    -optional~int~ m_CustomerID ~get/set~
+	    -double m_UsedCashback ~get/set~
+	    +void AddItem(ReceiptItem item)
+	    +double CalcTotal()
+    }
+
+    class RegularCashback {
+	    -static constexpr double m_Percentage
+	    +double CalcPrice(double receipt_total)
+    }
+
+    class ICashbackService {
+	    +int CreateCustomer(string name, string surname, ICashbackStrategy cashback_strat)
+	    +optional~Customer~ GetCustomer(int customer_id)
+	    +Customer[] GetAllCustomers()
+	    +void SetCustomerName(int customer_id, string name)
+	    +void SetCustomerSurname(int customer_id, string surname)
+	    +void AddCashback(int customer_id, double receipt_total)
+	    +void UseCashback(int customer_id, double amount)
+    }
+
+    class CashbackService {
+	    ICustomerStorage m_CustomerStorage
+	    +int CreateCustomer(string name, string surname, ICashbackStrategy cashback_strat)
+	    +optional~Customer~ GetCustomer(int customer_id)
+	    +Customer[] GetAllCustomers()
+	    +void SetCustomerName(int customer_id, string name)
+	    +void SetCustomerSurname(int customer_id, string surname)
+	    +void AddCashback(int customer_id, double receipt_total)
+	    +void UseCashback(int customer_id, double amount)
+    }
+
+    class JSONCustomerStorage {
+	    -filesystem::path m_Path
+	    -unordered_map~int, Customer~ m_Customers
+	    -int m_NextID
+	    +int Add(Customer customer)
+	    +void Update(Customer customer)
+	    +Customer Get(int id)
+	    +Customer[] Get(function~bool(Customer)~ predicate)
+	    +Customer[] GetAll()
+	    +void Remove(int id)
+    }
+
+    class JSONCustomerSerializer {
+	    +json Serialize(Customer customer)
+	    +Customer Deserialize(json customer_json)
+    }
+
     class ReceiptService {
 	    -IProductService m_ProductService
 	    -IProductStorage m_ProductStorage
 	    -IReceiptStorage m_ReceiptStorage
+	    -ICashbackService m_CashbackService
 	    +int StartNewReceipt()
 	    +void AddItemToReceipt(int receipt_id, int product_id, int quantity)
 	    +void CloseReceipt(int receipt_id)
@@ -162,6 +229,9 @@ direction TB
 	<<Interface>> IInventoryStorage
 	<<Interface>> IProductService
 	<<Interface>> IReceiptService
+	<<Interface>> ICashbackStrategy
+	<<Interface>> ICustomerStorage
+	<<Interface>> ICashbackService
 
     ReceiptItem --* Product
     IItemDiscountStrategy <|.. BundleDiscount
@@ -184,4 +254,12 @@ direction TB
     IProductService <|.. ProductService
     IReceiptService <|.. ReceiptService
     ReceiptService --o IProductService
+    Customer --o ICashbackStrategy
+    ICashbackStrategy <|.. RegularCashback
+    ICashbackService <|.. CashbackService
+    CashbackService --o ICustomerStorage
+    ICustomerStorage <|.. JSONCustomerStorage
+    JSONCustomerStorage --> JSONCustomerSerializer
+    JSONCustomerStorage --* Customer
+    ReceiptService --o ICashbackService
 ```
