@@ -10,11 +10,11 @@ class Customer
 public:
     Customer(int id, std::string name, std::string surname, double balance, std::shared_ptr<ICashbackStrategy> cashback_strategy);
 
-    int GetID();
-    std::string GetName();
-    std::string GetSurname();
-    double GetBalance();
-    std::shared_ptr<ICashbackStrategy> GetCashbackStrategy();
+    int GetID() const;
+    std::string GetName() const;
+    std::string GetSurname() const;
+    double GetBalance() const;
+    std::shared_ptr<ICashbackStrategy> GetCashbackStrategy() const;
     
     void SetID(int id);
     void SetName(std::string name);

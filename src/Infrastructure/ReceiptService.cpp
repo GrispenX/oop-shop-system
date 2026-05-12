@@ -35,6 +35,7 @@ void ReceiptService::AddItemToReceipt(int receipt_id, int product_id, int quanti
 void ReceiptService::AddCustomerToReceipt(int receipt_id, int customer_id)
 {
     Receipt receipt = m_ReceiptStorage->GetReceipt(receipt_id);
+    if(receipt.GetStatus() == ReceiptStatus::CLOSED) throw std::runtime_error("Can't change customer for closed receipt");
     std::optional<Customer> customer = m_CashbackService->GetCustomer(customer_id);
     if(!customer.has_value()) throw std::runtime_error("Customer does not exist");
     receipt.SetCustomerID(customer->GetID());

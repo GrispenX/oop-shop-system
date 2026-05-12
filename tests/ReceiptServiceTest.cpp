@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "../tests/Helpers.h"
-
 #include "Infrastructure/ReceiptService.h"
 
 using ::testing::Return;
+using ::testing::Throw;
 using ::testing::_;
 
 class MockProductStorage : public IProductStorage
@@ -44,15 +44,32 @@ public:
     MOCK_METHOD(void, RemoveStock, (int product_id, int amount), (override));
 };
 
+class MockCashbackService : public ICashbackService
+{
+public:
+    MOCK_METHOD(int, CreateCustomer, (std::string name, std::string surname, std::shared_ptr<ICashbackStrategy> cashback_strategy), (override));
+    MOCK_METHOD(std::optional<Customer>, GetCustomer, (int customer_id), (override));
+    MOCK_METHOD(std::vector<Customer>, GetAllCustomers, (), (override));
+    MOCK_METHOD(void, UseCashback, (int customer_id, double amount), (override));
+    MOCK_METHOD(void, AddCashback, (int customer_id, double receipt_total), (override));
+};
+
+class MockCashbackStrategy : public ICashbackStrategy
+{
+public:
+    MOCK_METHOD(double, CalcCashback, (double receipt_total), (override));
+};
+
 TEST(ReceiptServiceTest, StartNewReceiptStoresOpenedReceiptAndReturnsItID)
 {
     std::shared_ptr<MockProductStorage> product_storage = std::make_shared<MockProductStorage>();
     std::shared_ptr<MockReceiptStorage> receipt_storage = std::make_shared<MockReceiptStorage>();
     std::shared_ptr<MockProductService> product_service = std::make_shared<MockProductService>();
+    std::shared_ptr<MockCashbackService> cashback_service = std::make_shared<MockCashbackService>();
 
     EXPECT_CALL(*receipt_storage, AddReceipt(_)).WillOnce(Return(42));
 
-    ReceiptService service(product_storage, receipt_storage, product_service);
+    ReceiptService service(product_storage, receipt_storage, product_service, cashback_service);
 
     EXPECT_EQ(service.StartNewReceipt(), 42);
 }
@@ -62,6 +79,7 @@ TEST(ReceiptServiceTest, AddItemToOpenedReceipt)
     std::shared_ptr<MockProductStorage> product_storage = std::make_shared<MockProductStorage>();
     std::shared_ptr<MockReceiptStorage> receipt_storage = std::make_shared<MockReceiptStorage>();
     std::shared_ptr<MockProductService> product_service = std::make_shared<MockProductService>();
+    std::shared_ptr<MockCashbackService> cashback_service = std::make_shared<MockCashbackService>();
 
     Product product(69, "Test product", 99.99, nullptr);
     ReceiptItem item(product, 4);
@@ -73,7 +91,7 @@ TEST(ReceiptServiceTest, AddItemToOpenedReceipt)
     EXPECT_CALL(*product_service, RemoveStock(69, 4)).Times(1);
     EXPECT_CALL(*receipt_storage, UpdateReceipt(after));
 
-    ReceiptService service(product_storage, receipt_storage, product_service);
+    ReceiptService service(product_storage, receipt_storage, product_service, cashback_service);
 
     service.AddItemToReceipt(42, 69, 4);
 }
@@ -83,12 +101,13 @@ TEST(ReceiptServiceTest, AddItemToClosedReceiptThrowsException)
     std::shared_ptr<MockProductStorage> product_storage = std::make_shared<MockProductStorage>();
     std::shared_ptr<MockReceiptStorage> receipt_storage = std::make_shared<MockReceiptStorage>();
     std::shared_ptr<MockProductService> product_service = std::make_shared<MockProductService>();
+    std::shared_ptr<MockCashbackService> cashback_service = std::make_shared<MockCashbackService>();
 
     Receipt receipt(42, 0, {}, ReceiptStatus::CLOSED);
 
     EXPECT_CALL(*receipt_storage, GetReceipt(42)).Times(1).WillOnce(Return(receipt));
 
-    ReceiptService service(product_storage, receipt_storage, product_service);
+    ReceiptService service(product_storage, receipt_storage, product_service, cashback_service);
 
     EXPECT_ANY_THROW(service.AddItemToReceipt(42, 69, 4));
 }
@@ -98,6 +117,7 @@ TEST(ReceiptServiceTest, CancelReceiptRemovesItFromStorageAndRestocksProducts)
     std::shared_ptr<MockProductStorage> product_storage = std::make_shared<MockProductStorage>();
     std::shared_ptr<MockReceiptStorage> receipt_storage = std::make_shared<MockReceiptStorage>();
     std::shared_ptr<MockProductService> product_service = std::make_shared<MockProductService>();
+    std::shared_ptr<MockCashbackService> cashback_service = std::make_shared<MockCashbackService>();
 
     Receipt receipt(42, 0, {ReceiptItem(Product(5, "test product", 100, nullptr), 2)}, ReceiptStatus::OPENED);
 
@@ -105,7 +125,7 @@ TEST(ReceiptServiceTest, CancelReceiptRemovesItFromStorageAndRestocksProducts)
     EXPECT_CALL(*product_service, AddStock(5, 2)).Times(1);
     EXPECT_CALL(*receipt_storage, RemoveReceipt(42)).Times(1);
 
-    ReceiptService service(product_storage, receipt_storage, product_service);
+    ReceiptService service(product_storage, receipt_storage, product_service, cashback_service);
 
     EXPECT_NO_THROW(service.CancelReceipt(42));
 }
@@ -115,13 +135,85 @@ TEST(ReceiptServiceTest, CancelClosedReceiptThrowsException)
     std::shared_ptr<MockProductStorage> product_storage = std::make_shared<MockProductStorage>();
     std::shared_ptr<MockReceiptStorage> receipt_storage = std::make_shared<MockReceiptStorage>();
     std::shared_ptr<MockProductService> product_service = std::make_shared<MockProductService>();
+    std::shared_ptr<MockCashbackService> cashback_service = std::make_shared<MockCashbackService>();
 
     Receipt receipt(42, 0, {}, ReceiptStatus::CLOSED);
 
     EXPECT_CALL(*receipt_storage, GetReceipt(42)).Times(1).WillOnce(Return(receipt));
 
-    ReceiptService service(product_storage, receipt_storage, product_service);
+    ReceiptService service(product_storage, receipt_storage, product_service, cashback_service);
 
     EXPECT_ANY_THROW(service.CancelReceipt(42));
 }
 
+TEST(ReceiptServiceTest, AddValidCustomerToValidOpenedReceipt)
+{
+    std::shared_ptr<MockProductStorage> product_storage = std::make_shared<MockProductStorage>();
+    std::shared_ptr<MockReceiptStorage> receipt_storage = std::make_shared<MockReceiptStorage>();
+    std::shared_ptr<MockProductService> product_service = std::make_shared<MockProductService>();
+    std::shared_ptr<MockCashbackService> cashback_service = std::make_shared<MockCashbackService>();
+
+    Receipt receipt(42, 0, {}, ReceiptStatus::OPENED);
+    Customer customer(69, "test", "customer", 123, std::make_shared<MockCashbackStrategy>());
+    Receipt receipt_after(42, 0, {}, ReceiptStatus::OPENED, 123, 0);
+
+    EXPECT_CALL(*receipt_storage, GetReceipt(42)).Times(1).WillOnce(Return(receipt));
+    EXPECT_CALL(*cashback_service, GetCustomer(69)).Times(1).WillOnce(Return(customer));
+    EXPECT_CALL(*receipt_storage, UpdateReceipt(receipt_after)).Times(1);
+
+    ReceiptService service(product_storage, receipt_storage, product_service, cashback_service);
+
+    service.AddCustomerToReceipt(42, 69);
+}
+
+TEST(ReceiptServiceTest, AddValidCustomerToUnexistingReceiptThrowsException)
+{
+    std::shared_ptr<MockProductStorage> product_storage = std::make_shared<MockProductStorage>();
+    std::shared_ptr<MockReceiptStorage> receipt_storage = std::make_shared<MockReceiptStorage>();
+    std::shared_ptr<MockProductService> product_service = std::make_shared<MockProductService>();
+    std::shared_ptr<MockCashbackService> cashback_service = std::make_shared<MockCashbackService>();
+
+    Customer customer(69, "test", "customer", 123, std::make_shared<MockCashbackStrategy>());
+
+    EXPECT_CALL(*receipt_storage, GetReceipt(42)).Times(1).WillOnce(Throw(std::runtime_error("Receipt not found")));
+    ON_CALL(*cashback_service, GetCustomer(69)).WillByDefault(Return(customer));
+
+    ReceiptService service(product_storage, receipt_storage, product_service, cashback_service);
+
+    EXPECT_ANY_THROW(service.AddCustomerToReceipt(42, 69));
+}
+
+TEST(ReceiptServiceTest, AddUnexistingCustomerToValidReceiptThrowsException)
+{
+    std::shared_ptr<MockProductStorage> product_storage = std::make_shared<MockProductStorage>();
+    std::shared_ptr<MockReceiptStorage> receipt_storage = std::make_shared<MockReceiptStorage>();
+    std::shared_ptr<MockProductService> product_service = std::make_shared<MockProductService>();
+    std::shared_ptr<MockCashbackService> cashback_service = std::make_shared<MockCashbackService>();
+
+    Receipt receipt(42, 0, {}, ReceiptStatus::OPENED);
+
+    EXPECT_CALL(*receipt_storage, GetReceipt(42)).Times(1).WillOnce(Return(receipt));
+    ON_CALL(*cashback_service, GetCustomer(69)).WillByDefault(Return(std::nullopt));
+
+    ReceiptService service(product_storage, receipt_storage, product_service, cashback_service);
+
+    EXPECT_ANY_THROW(service.AddCustomerToReceipt(42, 69));
+}
+
+TEST(ReceiptServiceTest, AddValidCustomerToClosedReceiptThrowsException)
+{
+    std::shared_ptr<MockProductStorage> product_storage = std::make_shared<MockProductStorage>();
+    std::shared_ptr<MockReceiptStorage> receipt_storage = std::make_shared<MockReceiptStorage>();
+    std::shared_ptr<MockProductService> product_service = std::make_shared<MockProductService>();
+    std::shared_ptr<MockCashbackService> cashback_service = std::make_shared<MockCashbackService>();
+
+    Receipt receipt(42, 0, {}, ReceiptStatus::CLOSED);
+    Customer customer(69, "test", "customer", 123, std::make_shared<MockCashbackStrategy>());
+
+    EXPECT_CALL(*receipt_storage, GetReceipt(42)).Times(1).WillOnce(Return(receipt));
+    ON_CALL(*cashback_service, GetCustomer(69)).WillByDefault(Return(customer));
+
+    ReceiptService service(product_storage, receipt_storage, product_service, cashback_service);
+
+    EXPECT_ANY_THROW(service.AddCustomerToReceipt(42, 69));
+}

@@ -12,28 +12,28 @@ Customer::Customer(int id, std::string name, std::string surname, double balance
     if(cashback_strategy == nullptr) throw std::runtime_error("Customer should have cashback strategy");
 }
 
-int Customer::GetID()
+int Customer::GetID() const
 {
     return m_ID;
 }
 
-std::string Customer::GetName()
+std::string Customer::GetName() const
 {
     return m_Name;
 
 }
 
-std::string Customer::GetSurname()
+std::string Customer::GetSurname() const
 {
     return m_Surname;
 }
 
-double Customer::GetBalance()
+double Customer::GetBalance() const
 {
     return m_CashbackBalance;
 }
 
-std::shared_ptr<ICashbackStrategy> Customer::GetCashbackStrategy()
+std::shared_ptr<ICashbackStrategy> Customer::GetCashbackStrategy() const
 {
     return m_CashbackStrategy;
 }
