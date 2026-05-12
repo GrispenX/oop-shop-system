@@ -3,12 +3,14 @@
 
 #include "Infrastructure/IProductService.h"
 #include "Infrastructure/IReceiptService.h"
+#include "Infrastructure/ICashbackService.h"
 #include <memory>
 
 struct Context
 {
     std::shared_ptr<IProductService> product_service;
     std::shared_ptr<IReceiptService> receipt_service;
+    std::shared_ptr<ICashbackService> cashback_service;
 };
 
 class IView

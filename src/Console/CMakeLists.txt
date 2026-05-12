@@ -10,6 +10,9 @@ add_library(Console
     ReceiptManagement/ListReceiptsView.cpp
     ReceiptManagement/SelectReceiptView.cpp
     ReceiptManagement/ReceiptDetailsView.cpp
+
+    CashbackManagement/CashbackView.cpp
+    CashbackManagement/ListCustomersView.cpp
     )
 
 target_include_directories(Console PUBLIC ${CMAKE_SOURCE_DIR}/src)
