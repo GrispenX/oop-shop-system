@@ -13,7 +13,8 @@ add_library(Console
 
     CashbackManagement/CashbackView.cpp
     CashbackManagement/ListCustomersView.cpp
-    )
+    CashbackManagement/EditCustomerView.cpp
+)
 
 target_include_directories(Console PUBLIC ${CMAKE_SOURCE_DIR}/src)
 

@@ -2,6 +2,7 @@
 #include "Console/ReadWithValidation.h"
 #include "Console/MainView.h"
 #include "Console/CashbackManagement/ListCustomersView.h"
+#include "Console/CashbackManagement/EditCustomerView.h"
 #include "Bussiness/RegularCashback.h"
 
 CashbackView::CashbackView(Context context) :
@@ -49,11 +50,17 @@ std::unique_ptr<IView> CashbackView::Run()
         break;
     }
 
-    case 3:
-
+    case 3: {
+        int customer_id;
+        std::cout << "Customer ID: ";
+        std::cin >> customer_id;
+        std::cout << "\n";
+        return std::make_unique<EditCustomerView>(m_Context, customer_id);
         break;
+    }
     
     default:
+        std::cout << "\n";
         return std::make_unique<MainView>(m_Context);
         break;
     }

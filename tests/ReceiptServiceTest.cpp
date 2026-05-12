@@ -50,6 +50,8 @@ public:
     MOCK_METHOD(int, CreateCustomer, (std::string name, std::string surname, std::shared_ptr<ICashbackStrategy> cashback_strategy), (override));
     MOCK_METHOD(std::optional<Customer>, GetCustomer, (int customer_id), (override));
     MOCK_METHOD(std::vector<Customer>, GetAllCustomers, (), (override));
+    MOCK_METHOD(void, SetCustomerName, (int customer_id, std::string name), (override));
+    MOCK_METHOD(void, SetCustomerSurname, (int customer_id, std::string surname), (override));
     MOCK_METHOD(void, UseCashback, (int customer_id, double amount), (override));
     MOCK_METHOD(void, AddCashback, (int customer_id, double receipt_total), (override));
 };

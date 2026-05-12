@@ -30,6 +30,20 @@ std::vector<Customer> CashbackService::GetAllCustomers()
     return m_CustomerStorage->GetAll();
 }
 
+void CashbackService::SetCustomerName(int customer_id, std::string name)
+{
+    Customer customer = m_CustomerStorage->Get(customer_id);
+    customer.SetName(name);
+    m_CustomerStorage->Update(customer);
+}
+
+void CashbackService::SetCustomerSurname(int customer_id, std::string surname)
+{
+    Customer customer = m_CustomerStorage->Get(customer_id);
+    customer.SetSurname(surname);
+    m_CustomerStorage->Update(customer);
+}
+
 void CashbackService::UseCashback(int customer_id, double amount)
 {
     if(amount < 0) throw std::runtime_error("Amount shouldn't be less than 0");
