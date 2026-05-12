@@ -32,6 +32,7 @@ std::vector<Customer> CashbackService::GetAllCustomers()
 
 void CashbackService::UseCashback(int customer_id, double amount)
 {
+    if(amount < 0) throw std::runtime_error("Amount shouldn't be less than 0");
     Customer customer = m_CustomerStorage->Get(customer_id);
     double balance = customer.GetBalance();
     if(balance < amount) throw std::runtime_error("There is not enough cashback on balance");
@@ -41,6 +42,7 @@ void CashbackService::UseCashback(int customer_id, double amount)
 
 void CashbackService::AddCashback(int customer_id, double receipt_total)
 {
+    if(receipt_total < 0) throw std::runtime_error("Receipt total shouldn't be less than 0");
     Customer customer = m_CustomerStorage->Get(customer_id);
     double balance = customer.GetBalance();
     double to_add = customer.GetCashbackStrategy()->CalcCashback(receipt_total);
