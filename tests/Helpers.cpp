@@ -33,3 +33,12 @@ bool operator==(const Receipt& r1, const Receipt& r2)
            r1.GetStatus() == r2.GetStatus() &&
            r1.GetTimestamp() == r2.GetTimestamp();
 }
+
+bool operator==(const Customer& c1, const Customer& c2)
+{
+    return c1.GetID() == c2.GetID() &&
+           c1.GetName() == c2.GetName() &&
+           c1.GetSurname() == c2.GetSurname() &&
+           c1.GetBalance() == c2.GetBalance() &&
+           c1.GetCashbackStrategy() == c2.GetCashbackStrategy();
+}

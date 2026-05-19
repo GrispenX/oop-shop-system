@@ -19,3 +19,13 @@ std::string BundleDiscount::GetDescription()
 {
     return std::format("-{}% for each {}", m_DiscountPercentage * 100, m_MinQuantity);
 }
+
+int BundleDiscount::GetMinQuantity()
+{
+    return m_MinQuantity;
+}
+
+double BundleDiscount::GetPercentage()
+{
+    return m_DiscountPercentage;
+}

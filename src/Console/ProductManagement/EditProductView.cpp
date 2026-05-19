@@ -25,9 +25,10 @@ std::unique_ptr<IView> EditProductView::Run()
     Product p = product.value();
 
     std::cout << "===== Product management =====\n";
-    std::cout << "ID:    " << p.GetID() << "\n";
-    std::cout << "Name:  " << p.GetName() << "\n";
-    std::cout << "Price: " << p.GetPrice() << "\n";
+    std::cout << "ID:       " << p.GetID() << "\n";
+    std::cout << "Name:     " << p.GetName() << "\n";
+    std::cout << "Price:    " << p.GetPrice() << "\n";
+    std::cout << "In stock: " << m_Context.product_service->GetStockAmount(p.GetID()) << "\n";
     if(p.GetDiscount() != nullptr)
     {
         std::cout << "Discount: " << p.GetDiscount()->GetDescription() << "\n";
@@ -35,18 +36,19 @@ std::unique_ptr<IView> EditProductView::Run()
     std::cout << "\n";
     std::cout << "  1. Change name\n";
     std::cout << "  2. Change price\n";
+    std::cout << "  3. Restock\n";
     if(p.GetDiscount() != nullptr)
     {
-        std::cout << "  3. Remove discount\n";
+        std::cout << "  4. Remove discount\n";
     }
     else
     {
-        std::cout << "  3. Set discount\n";
+        std::cout << "  4. Set discount\n";
     }
-    std::cout << "  4. Back\n";
+    std::cout << "  5. Back\n";
     std::cout << "\n";
 
-    int choice = ReadWithValidation<int>("Choice", [](int i) { return i >= 1 && i <= 4; });
+    int choice = ReadWithValidation<int>("Choice", [](int i) { return i >= 1 && i <= 5; });
     
     switch(choice)
     {
@@ -77,6 +79,22 @@ std::unique_ptr<IView> EditProductView::Run()
         break;
 
     case 3:
+        double amount;
+        std::cout << "Amount: ";
+        std::cin >> amount;
+        try
+        {
+            m_Context.product_service->AddStock(m_ProductID, amount);
+        }
+        catch(const std::exception& e)
+        {
+            std::cout << "\033[1;31m" << e.what() << "\033[0m\n";
+        }
+        std::cout << "\n";
+        return std::make_unique<EditProductView>(m_Context, m_ProductID);
+        break;
+
+    case 4:
         if(p.GetDiscount() != nullptr)
         {
             m_Context.product_service->SetDiscount(m_ProductID, nullptr);
