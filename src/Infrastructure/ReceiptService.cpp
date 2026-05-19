@@ -25,9 +25,10 @@ void ReceiptService::AddItemToReceipt(int receipt_id, int product_id, int quanti
     Receipt receipt = m_ReceiptStorage->GetReceipt(receipt_id);
     if(receipt.GetStatus() == ReceiptStatus::CLOSED) throw std::runtime_error("Can't add item to closed receipt");
 
-    Product product = m_ProductStorage->GetProduct(product_id);
+    std::optional<Product> product = m_ProductStorage->GetProduct(product_id);
+    if(!product) throw std::runtime_error("Product not found");
     m_ProductService->RemoveStock(product_id, quantity);
-    ReceiptItem item(product, quantity);
+    ReceiptItem item(product.value(), quantity);
     receipt.AddItem(item);
     m_ReceiptStorage->UpdateReceipt(receipt);
 }
