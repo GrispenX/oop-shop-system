@@ -13,7 +13,7 @@ public:
 
     int Add(Customer customer) override;
     void Update(Customer customer) override;
-    Customer Get(int id) override;
+    std::optional<Customer> Get(int id) override;
     std::vector<Customer> Get(std::function<bool(Customer)> predicate) override;
     std::vector<Customer> GetAll() override;
     void Remove(int id) override;

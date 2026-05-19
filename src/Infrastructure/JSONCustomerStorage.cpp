@@ -57,10 +57,10 @@ void JSONCustomerStorage::Update(Customer customer)
     it->second = customer;
 }
 
-Customer JSONCustomerStorage::Get(int id)
+std::optional<Customer> JSONCustomerStorage::Get(int id)
 {
     auto it = m_Customers.find(id);
-    if(it == m_Customers.end()) throw std::runtime_error("Customer does not exist");
+    if(it == m_Customers.end()) return std::nullopt;
     return it->second;
 }
 
