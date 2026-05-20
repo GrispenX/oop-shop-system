@@ -59,10 +59,10 @@ void JSONProductStorage::UpdateProduct(Product product)
     it->second = product;
 }
 
-Product JSONProductStorage::GetProduct(int id)
+std::optional<Product> JSONProductStorage::GetProduct(int id)
 {
     auto it = m_Products.find(id);
-    if(it == m_Products.end()) throw std::runtime_error("Product does not exist");
+    if(it == m_Products.end()) return std::nullopt;
     return it->second;
 }
 

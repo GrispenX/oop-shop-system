@@ -41,7 +41,6 @@ public:
     void SetUsedCashback(double used_cashback);
     
     void AddItem(ReceiptItem item);
-    // Excluding cashback
     double CalcTotal() const;
 
 private:

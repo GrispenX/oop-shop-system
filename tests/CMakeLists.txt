@@ -7,6 +7,7 @@ add_executable(${PROJECT_NAME}_test
     ProductServiceTest.cpp
     ReceiptServiceTest.cpp
     CashbackServiceTest.cpp
+    JSONStoragesTest.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}_test PRIVATE

@@ -4,6 +4,7 @@
 #include "Core/Receipt.h"
 #include <functional>
 #include <vector>
+#include <optional>
 
 class IReceiptStorage
 {
@@ -12,7 +13,7 @@ public:
 
     virtual int AddReceipt(Receipt receipt) = 0;
     virtual void UpdateReceipt(Receipt receipt) = 0;
-    virtual Receipt GetReceipt(int id) = 0;
+    virtual std::optional<Receipt> GetReceipt(int id) = 0;
     virtual std::vector<Receipt> GetReceipts(std::function<bool(Receipt)> predicate) = 0;
     virtual std::vector<Receipt> GetAllReceipts() = 0;
     virtual void RemoveReceipt(int id) = 0;

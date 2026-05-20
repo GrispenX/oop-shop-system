@@ -11,7 +11,7 @@ public:
     JSONInventoryStorage(std::filesystem::path path);
     ~JSONInventoryStorage();
 
-    int GetStock(int product_id) override;
+    std::optional<int> GetStock(int product_id) override;
     void SetStock(int product_id, int amount) override;
 
 private:

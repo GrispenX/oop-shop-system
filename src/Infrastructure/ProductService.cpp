@@ -9,6 +9,8 @@ ProductService::ProductService(std::shared_ptr<IProductStorage> product_storage,
 
 int ProductService::CreateProduct(std::string name, double price)
 {
+    if(name.empty()) throw std::runtime_error("Name should not be empty");
+    if(price <= 0) throw std::runtime_error("Price should be greater than 0");
     Product product(0, name, price, nullptr);
     int id = m_ProductStorage->AddProduct(product);
     m_InventoryStorage->SetStock(id, 0);
@@ -17,28 +19,25 @@ int ProductService::CreateProduct(std::string name, double price)
 
 void ProductService::SetPrice(int product_id, double price)
 {
-    Product product = m_ProductStorage->GetProduct(product_id);
-    product.SetPrice(price);
-    m_ProductStorage->UpdateProduct(product);
+    if(price <= 0) throw std::runtime_error("Price should be greater than 0");
+    std::optional<Product> product = m_ProductStorage->GetProduct(product_id);
+    if(!product) throw std::runtime_error("Product not found");
+    product->SetPrice(price);
+    m_ProductStorage->UpdateProduct(product.value());
 }
 
 void ProductService::SetName(int product_id, std::string name)
 {
-    Product product = m_ProductStorage->GetProduct(product_id);
-    product.SetName(name);
-    m_ProductStorage->UpdateProduct(product);
+    if(name.empty()) throw std::runtime_error("Name should not be empty");
+    std::optional<Product> product = m_ProductStorage->GetProduct(product_id);
+    if(!product) throw std::runtime_error("Product not found");
+    product->SetName(name);
+    m_ProductStorage->UpdateProduct(product.value());
 }
 
 std::optional<Product> ProductService::GetProduct(int product_id)
 {
-    try
-    {
-        return m_ProductStorage->GetProduct(product_id);
-    }
-    catch(const std::exception& e)
-    {
-        return std::nullopt;
-    }
+    return m_ProductStorage->GetProduct(product_id);
 }
 
 std::vector<Product> ProductService::GetAll()
@@ -48,54 +47,42 @@ std::vector<Product> ProductService::GetAll()
 
 void ProductService::SetDiscount(int product_id, std::shared_ptr<IDiscountStrategy> discount)
 {
-    Product product = m_ProductStorage->GetProduct(product_id);
-    product.SetDiscount(discount);
-    m_ProductStorage->UpdateProduct(product);
+    std::optional<Product> product = m_ProductStorage->GetProduct(product_id);
+    if(!product) throw std::runtime_error("Product not found");
+    product->SetDiscount(discount);
+    m_ProductStorage->UpdateProduct(product.value());
 }
 
 int ProductService::GetStockAmount(int product_id)
 {
-    m_ProductStorage->GetProduct(product_id);
-    try
-    {
-        return m_InventoryStorage->GetStock(product_id);
-    }
-    catch(const std::exception& e)
+    if(!m_ProductStorage->GetProduct(product_id)) throw std::runtime_error("Product not found");
+    std::optional<int> stock = m_InventoryStorage->GetStock(product_id);
+    if(!stock)
     {
         m_InventoryStorage->SetStock(product_id, 0);
         return 0;
+    }
+    else
+    {
+        return stock.value();
     }
 }
 
 void ProductService::AddStock(int product_id, int amount)
 {
-    m_ProductStorage->GetProduct(product_id);
+    if(!m_ProductStorage->GetProduct(product_id)) throw std::runtime_error("Product not found");
     if(amount <= 0) throw std::runtime_error("Amount should be greater than 0");
-    try
-    {
-        int in_stock = m_InventoryStorage->GetStock(product_id);
-        m_InventoryStorage->SetStock(product_id, in_stock + amount);
-    }
-    catch(const std::exception& e)
-    {
-        m_InventoryStorage->SetStock(product_id, amount);
-    }
+    std::optional<int> stock = m_InventoryStorage->GetStock(product_id);
+    int new_stock = stock.has_value() ? stock.value() + amount : amount;
+    m_InventoryStorage->SetStock(product_id, new_stock);
 }
 
 void ProductService::RemoveStock(int product_id, int amount)
 {
-    m_ProductStorage->GetProduct(product_id);
+    if(!m_ProductStorage->GetProduct(product_id)) throw std::runtime_error("Product not found");
     if(amount <= 0) throw std::runtime_error("Amount should be greater than 0");
-    int in_stock;
-    try
-    {
-        in_stock = m_InventoryStorage->GetStock(product_id);
-    }
-    catch(const std::exception& e)
-    {
-        m_InventoryStorage->SetStock(product_id, 0);
-        in_stock = 0;
-    }
-    if(in_stock - amount < 0) throw std::runtime_error("There is not enough product in stock");
-    m_InventoryStorage->SetStock(product_id, in_stock - amount);
+    std::optional<int> stock = m_InventoryStorage->GetStock(product_id);
+    int new_stock = stock.has_value() ? stock.value() - amount : - amount;
+    if(new_stock < 0) throw std::runtime_error("There is not enough product in stock");
+    m_InventoryStorage->SetStock(product_id, new_stock);
 }

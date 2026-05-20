@@ -13,7 +13,7 @@ class MockCustomerStorage : public ICustomerStorage
 public:
     MOCK_METHOD(int, Add, (Customer customer), (override));
     MOCK_METHOD(void, Update, (Customer customer), (override));
-    MOCK_METHOD(Customer, Get, (int id), (override));
+    MOCK_METHOD(std::optional<Customer>, Get, (int id), (override));
     MOCK_METHOD(std::vector<Customer>, Get, (std::function<bool(Customer)> predicate), (override));
     MOCK_METHOD(std::vector<Customer>, GetAll, (), (override));
     MOCK_METHOD(void, Remove, (int id), (override));
@@ -25,96 +25,143 @@ public:
     MOCK_METHOD(double, CalcCashback, (double receipt_total), (override));
 };
 
-TEST(CashbackServiceTest, CreateCustomerWithValidDataCreatesCustomerAndSetsbalanceToZero)
-{
-    std::shared_ptr<MockCustomerStorage> customer_storage = std::make_shared<MockCustomerStorage>();
-    std::shared_ptr<MockCashbackStrategy> cashback_strategy = std::make_shared<MockCashbackStrategy>();
 
+
+class CashbackServiceTest : public ::testing::Test
+{
+protected:
+    void SetUp() override
+    {
+        customer_storage = std::make_shared<MockCustomerStorage>();
+        service = new CashbackService(customer_storage);
+
+        cashback_strategy = std::make_shared<MockCashbackStrategy>();
+    }
+
+    void TearDown() override
+    {
+        delete service;
+    }
+
+    std::shared_ptr<MockCustomerStorage> customer_storage;
+    CashbackService* service;
+
+    std::shared_ptr<MockCashbackStrategy> cashback_strategy;
+};
+
+
+
+TEST_F(CashbackServiceTest, CreateCustomerWithValidDataCreatesCustomerAndSetsbalanceToZero)
+{
     EXPECT_CALL(*customer_storage, Add(Customer(0, "name", "surname", 0, cashback_strategy))).Times(1).WillOnce(Return(42));
 
-    CashbackService service(customer_storage);
-
-    EXPECT_EQ(service.CreateCustomer("name", "surname", cashback_strategy), 42);
+    EXPECT_EQ(service->CreateCustomer("name", "surname", cashback_strategy), 42);
 }
 
-TEST(CashbackServiceTest, CreateCustomerWithoutCashbackStrategyThrowsException)
+TEST_F(CashbackServiceTest, CreateCustomerWithEmptyNameThrowsException)
 {
-    std::shared_ptr<MockCustomerStorage> customer_storage = std::make_shared<MockCustomerStorage>();
-
-    CashbackService service(customer_storage);
-
-    EXPECT_ANY_THROW(service.CreateCustomer("name", "surname", nullptr));
+    EXPECT_ANY_THROW(service->CreateCustomer("", "surname", std::make_shared<MockCashbackStrategy>()));
 }
 
-TEST(CashbackServiceTest, GetCustomerForExistingCustomerReturnsCustomer)
+TEST_F(CashbackServiceTest, CreateCustomerWithEmptySurnameThrowsException)
 {
-    std::shared_ptr<MockCustomerStorage> customer_storage = std::make_shared<MockCustomerStorage>();
-    std::shared_ptr<MockCashbackStrategy> cashback_strategy = std::make_shared<MockCashbackStrategy>();
+    EXPECT_ANY_THROW(service->CreateCustomer("name", "", std::make_shared<MockCashbackStrategy>()));
+}
 
+TEST_F(CashbackServiceTest, CreateCustomerWithoutCashbackStrategyThrowsException)
+{
+    EXPECT_ANY_THROW(service->CreateCustomer("name", "surname", nullptr));
+}
+
+TEST_F(CashbackServiceTest, SetNameForExistingCustomerChangesName)
+{
+    EXPECT_CALL(*customer_storage, Get(42)).Times(1).WillOnce(Return(Customer(42, "Till", "Lindemann", 123, cashback_strategy)));
+    EXPECT_CALL(*customer_storage, Update(Customer(42, "New name", "Lindemann", 123, cashback_strategy))).Times(1);
+
+    EXPECT_NO_THROW(service->SetCustomerName(42, "New name"));
+}
+
+TEST_F(CashbackServiceTest, SetEmptyNameForExistingCustomerThrowsException)
+{
+    ON_CALL(*customer_storage, Get(42)).WillByDefault(Return(Customer(42, "Till", "Lindemann", 123, cashback_strategy)));
+
+    EXPECT_ANY_THROW(service->SetCustomerName(42, ""));
+}
+
+TEST_F(CashbackServiceTest, SetNameForUnexistingCustomerThrowsException)
+{
+    ON_CALL(*customer_storage, Get(42)).WillByDefault(Return(std::nullopt));
+
+    EXPECT_ANY_THROW(service->SetCustomerName(42, "New name"));
+}
+
+TEST_F(CashbackServiceTest, SetSurnameForExistingCustomerChangesSurname)
+{
+    EXPECT_CALL(*customer_storage, Get(42)).Times(1).WillOnce(Return(Customer(42, "Till", "Lindemann", 123, cashback_strategy)));
+    EXPECT_CALL(*customer_storage, Update(Customer(42, "Till", "New surname", 123, cashback_strategy))).Times(1);
+
+    EXPECT_NO_THROW(service->SetCustomerSurname(42, "New surname"));
+}
+
+TEST_F(CashbackServiceTest, SetEmptySurnameForExistingCustomerThrowsException)
+{
+    ON_CALL(*customer_storage, Get(42)).WillByDefault(Return(Customer(42, "Till", "Lindemann", 123, cashback_strategy)));
+
+    EXPECT_ANY_THROW(service->SetCustomerSurname(42, ""));
+}
+
+TEST_F(CashbackServiceTest, SetSurnameForUnexistingCustomerThrowsException)
+{
+    ON_CALL(*customer_storage, Get(42)).WillByDefault(Return(std::nullopt));
+
+    EXPECT_ANY_THROW(service->SetCustomerSurname(42, "New surname"));
+}
+
+TEST_F(CashbackServiceTest, GetCustomerForExistingCustomerReturnsCustomer)
+{
     Customer customer(42, "name", "surname", 123, cashback_strategy);
 
     EXPECT_CALL(*customer_storage, Get(42)).Times(1).WillOnce(Return(customer));
 
-    CashbackService service(customer_storage);
-
-    EXPECT_EQ(service.GetCustomer(42), customer);
+    EXPECT_EQ(service->GetCustomer(42), customer);
 }
 
-TEST(CashbackServiceTest, GetCustomerForUnexistingCustomerReturnsNullopt)
+TEST_F(CashbackServiceTest, GetCustomerForUnexistingCustomerReturnsNullopt)
 {
-    std::shared_ptr<MockCustomerStorage> customer_storage = std::make_shared<MockCustomerStorage>();
+    EXPECT_CALL(*customer_storage, Get(42)).Times(1).WillOnce(Return(std::nullopt));
 
-    EXPECT_CALL(*customer_storage, Get(42)).Times(1).WillOnce(Throw(std::runtime_error("Customer not found")));
-
-    CashbackService service(customer_storage);
-
-    EXPECT_EQ(service.GetCustomer(42), std::nullopt);
+    EXPECT_EQ(service->GetCustomer(42), std::nullopt);
 }
 
-TEST(CashbackServiceTest, UseCashbackDecreasesCustomerBalance)
+TEST_F(CashbackServiceTest, UseCashbackDecreasesCustomerBalance)
 {
-    std::shared_ptr<MockCustomerStorage> customer_storage = std::make_shared<MockCustomerStorage>();
-    std::shared_ptr<MockCashbackStrategy> cashback_strategy = std::make_shared<MockCashbackStrategy>();
-
     Customer customer(42, "name", "surname", 123, cashback_strategy);
     Customer customer_after(42, "name", "surname", 100, cashback_strategy);
 
     EXPECT_CALL(*customer_storage, Get(42)).Times(1).WillOnce(Return(customer));
     EXPECT_CALL(*customer_storage, Update(customer_after)).Times(1);
 
-    CashbackService service(customer_storage);
-
-    service.UseCashback(42, 23);
+    service->UseCashback(42, 23);
 }
 
-TEST(CashbackServiceTest, UseCashbackWithInsuffitientBalanceThrowsException)
+TEST_F(CashbackServiceTest, UseCashbackWithInsuffitientBalanceThrowsException)
 {
-    std::shared_ptr<MockCustomerStorage> customer_storage = std::make_shared<MockCustomerStorage>();
-    std::shared_ptr<MockCashbackStrategy> cashback_strategy = std::make_shared<MockCashbackStrategy>();
-
     Customer customer(42, "name", "surname", 123, cashback_strategy);
 
     EXPECT_CALL(*customer_storage, Get(42)).Times(1).WillOnce(Return(customer));
 
-    CashbackService service(customer_storage);
-
-    EXPECT_ANY_THROW(service.UseCashback(42, 124));
+    EXPECT_ANY_THROW(service->UseCashback(42, 124));
 }
 
-TEST(CashbackServiceTest, UseCashbackForUnexistingCustomerThrowsException)
+TEST_F(CashbackServiceTest, UseCashbackForUnexistingCustomerThrowsException)
 {
-    std::shared_ptr<MockCustomerStorage> customer_storage = std::make_shared<MockCustomerStorage>();
+    EXPECT_CALL(*customer_storage, Get(42)).Times(1).WillOnce(Return(std::nullopt));
 
-    EXPECT_CALL(*customer_storage, Get(42)).Times(1).WillOnce(Throw(std::runtime_error("Customer not found")));
-
-    CashbackService service(customer_storage);
-
-    EXPECT_ANY_THROW(service.UseCashback(42, 1));
+    EXPECT_ANY_THROW(service->UseCashback(42, 1));
 }
 
-TEST(CashbackServiceTest, AddCashbackForExistingCustomerAddsCashback)
+TEST_F(CashbackServiceTest, AddCashbackForExistingCustomerAddsCashback)
 {
-    std::shared_ptr<MockCustomerStorage> customer_storage = std::make_shared<MockCustomerStorage>();
     std::shared_ptr<MockCashbackStrategy> cashback_strategy = std::make_shared<MockCashbackStrategy>();
 
     Customer customer(42, "name", "surname", 100, cashback_strategy);
@@ -124,32 +171,22 @@ TEST(CashbackServiceTest, AddCashbackForExistingCustomerAddsCashback)
     EXPECT_CALL(*cashback_strategy, CalcCashback(500)).Times(1).WillOnce(Return(50));
     EXPECT_CALL(*customer_storage, Update(customer_after)).Times(1);
 
-    CashbackService service(customer_storage);
-
-    service.AddCashback(42, 500);
+    service->AddCashback(42, 500);
 }
 
-TEST(CashbackServiceTest, AddCashbackForUnexistingCustomerThrowsException)
+TEST_F(CashbackServiceTest, AddCashbackForUnexistingCustomerThrowsException)
 {
-    std::shared_ptr<MockCustomerStorage> customer_storage = std::make_shared<MockCustomerStorage>();
+    EXPECT_CALL(*customer_storage, Get(42)).Times(1).WillOnce(Return(std::nullopt));
 
-    EXPECT_CALL(*customer_storage, Get(42)).Times(1).WillOnce(Throw(std::runtime_error("Customer not found")));
-
-    CashbackService service(customer_storage);
-
-    EXPECT_ANY_THROW(service.AddCashback(42, 500));
+    EXPECT_ANY_THROW(service->AddCashback(42, 500));
 }
 
-TEST(CashbackServiceTest, AddCashbackWithNegativeReceiptTotalThrowsException)
-{
-    std::shared_ptr<MockCustomerStorage> customer_storage = std::make_shared<MockCustomerStorage>();
-    std::shared_ptr<MockCashbackStrategy> cashback_strategy = std::make_shared<MockCashbackStrategy>();
+TEST_F(CashbackServiceTest, AddCashbackWithNegativeReceiptTotalThrowsException)
+{    std::shared_ptr<MockCashbackStrategy> cashback_strategy = std::make_shared<MockCashbackStrategy>();
 
     Customer customer(42, "name", "surname", 100, cashback_strategy);
 
     ON_CALL(*customer_storage, Get(42)).WillByDefault(Return(customer));
 
-    CashbackService service(customer_storage);
-
-    EXPECT_ANY_THROW(service.AddCashback(42, -1));
+    EXPECT_ANY_THROW(service->AddCashback(42, -1));
 }

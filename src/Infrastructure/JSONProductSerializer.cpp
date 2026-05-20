@@ -34,6 +34,14 @@ nlohmann::json JSONProductSerializer::Serialize(Product product)
 
 Product JSONProductSerializer::Deserialize(nlohmann::json product_json)
 {
+    if(!(
+        product_json.contains("id") &&
+        product_json.contains("name") &&
+        product_json.contains("price") &&
+        product_json.contains("discount") &&
+        product_json["discount"].contains("type")
+    )) throw std::runtime_error("Invalid json");
+
     int id = product_json["id"].get<int>();
     std::string name = product_json["name"].get<std::string>();
     double price = product_json["price"].get<double>();

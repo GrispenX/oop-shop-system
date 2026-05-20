@@ -12,7 +12,7 @@ public:
 
     int AddProduct(Product product) override;
     void UpdateProduct(Product product) override;
-    Product GetProduct(int id) override;
+    std::optional<Product> GetProduct(int id) override;
     std::vector<Product> GetProducts(std::function<bool(Product)> predicate) override;
     std::vector<Product> GetAllProducts() override;
     void RemoveProduct(int id) override;
