@@ -37,10 +37,10 @@ JSONInventoryStorage::~JSONInventoryStorage()
     file.close();
 }
 
-int JSONInventoryStorage::GetStock(int product_id)
+std::optional<int> JSONInventoryStorage::GetStock(int product_id)
 {
     auto it = m_Stock.find(product_id);
-    if(it == m_Stock.end()) throw std::runtime_error("Product not found");
+    if(it == m_Stock.end()) return std::nullopt;
     return it->second;
 }
 
