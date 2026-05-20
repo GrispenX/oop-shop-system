@@ -22,64 +22,67 @@ int ReceiptService::StartNewReceipt()
 
 void ReceiptService::AddItemToReceipt(int receipt_id, int product_id, int quantity)
 {
-    Receipt receipt = m_ReceiptStorage->GetReceipt(receipt_id);
-    if(receipt.GetStatus() == ReceiptStatus::CLOSED) throw std::runtime_error("Can't add item to closed receipt");
-
+    std::optional<Receipt> receipt = m_ReceiptStorage->GetReceipt(receipt_id);
+    if(!receipt) throw std::runtime_error("Receipt not found");
+    if(receipt->GetStatus() == ReceiptStatus::CLOSED) throw std::runtime_error("Can't add item to closed receipt");
     std::optional<Product> product = m_ProductStorage->GetProduct(product_id);
     if(!product) throw std::runtime_error("Product not found");
     m_ProductService->RemoveStock(product_id, quantity);
     ReceiptItem item(product.value(), quantity);
-    receipt.AddItem(item);
-    m_ReceiptStorage->UpdateReceipt(receipt);
+    receipt->AddItem(item);
+    m_ReceiptStorage->UpdateReceipt(receipt.value());
 }
 
 void ReceiptService::AddCustomerToReceipt(int receipt_id, int customer_id)
 {
-    Receipt receipt = m_ReceiptStorage->GetReceipt(receipt_id);
-    if(receipt.GetStatus() == ReceiptStatus::CLOSED) throw std::runtime_error("Can't change customer for closed receipt");
+    std::optional<Receipt> receipt = m_ReceiptStorage->GetReceipt(receipt_id);
+    if(!receipt) throw std::runtime_error("Receipt not found");
+    if(receipt->GetStatus() == ReceiptStatus::CLOSED) throw std::runtime_error("Can't change customer for closed receipt");
     std::optional<Customer> customer = m_CashbackService->GetCustomer(customer_id);
     if(!customer.has_value()) throw std::runtime_error("Customer does not exist");
-    receipt.SetCustomerID(customer->GetID());
-    m_ReceiptStorage->UpdateReceipt(receipt);
+    receipt->SetCustomerID(customer->GetID());
+    m_ReceiptStorage->UpdateReceipt(receipt.value());
 }
 
 void ReceiptService::CloseReceipt(int receipt_id, double use_cashback)
 {
     if(use_cashback < 0) throw std::runtime_error("Cashback shouldn't be less than 0");
 
-    Receipt receipt = m_ReceiptStorage->GetReceipt(receipt_id);
-    std::optional<int> customer_id = receipt.GetCustomerID();
+    std::optional<Receipt> receipt = m_ReceiptStorage->GetReceipt(receipt_id);
+    if(!receipt) throw std::runtime_error("Receipt not found");
+    std::optional<int> customer_id = receipt->GetCustomerID();
 
     if(!customer_id.has_value() && use_cashback != 0) throw std::runtime_error("Customer ID should be not null to use cashback");
     
     if(customer_id.has_value() && use_cashback != 0)
     {
-        receipt.SetUsedCashback(use_cashback);
+        receipt->SetUsedCashback(use_cashback);
         try
         {
             m_CashbackService->UseCashback(customer_id.value(), use_cashback);
         }
         catch(const std::exception& e)
         {
-            receipt.SetUsedCashback(0);
+            receipt->SetUsedCashback(0);
             throw;
         }
     }
 
     if(customer_id.has_value())
     {
-        m_CashbackService->AddCashback(customer_id.value(), receipt.CalcTotal());
+        m_CashbackService->AddCashback(customer_id.value(), receipt->CalcTotal());
     }
 
-    receipt.SetStatus(ReceiptStatus::CLOSED);
-    m_ReceiptStorage->UpdateReceipt(receipt);
+    receipt->SetStatus(ReceiptStatus::CLOSED);
+    m_ReceiptStorage->UpdateReceipt(receipt.value());
 }
 
 void ReceiptService::CancelReceipt(int receipt_id)
 {
-    Receipt receipt = m_ReceiptStorage->GetReceipt(receipt_id);
-    if(receipt.GetStatus() != ReceiptStatus::OPENED) throw std::runtime_error("Receipt should be opened to cancel it");
-    for(auto item : receipt.GetItems())
+    std::optional<Receipt> receipt = m_ReceiptStorage->GetReceipt(receipt_id);
+    if(!receipt) throw std::runtime_error("Receipt not found");
+    if(receipt->GetStatus() != ReceiptStatus::OPENED) throw std::runtime_error("Receipt should be opened to cancel it");
+    for(auto item : receipt->GetItems())
     {
         m_ProductService->AddStock(item.GetProduct().GetID(), item.GetQuantity());
     }

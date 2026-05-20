@@ -12,7 +12,7 @@ public:
 
     int AddReceipt(Receipt receipt) override;
     void UpdateReceipt(Receipt receipt) override;
-    Receipt GetReceipt(int id) override;
+    std::optional<Receipt> GetReceipt(int id) override;
     std::vector<Receipt> GetReceipts(std::function<bool(Receipt)> predicate) override;
     std::vector<Receipt> GetAllReceipts() override;
     void RemoveReceipt(int id) override;

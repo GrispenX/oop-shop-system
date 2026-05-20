@@ -59,10 +59,10 @@ void JSONReceiptStorage::UpdateReceipt(Receipt receipt)
     it->second = receipt;
 }
 
-Receipt JSONReceiptStorage::GetReceipt(int id)
+std::optional<Receipt> JSONReceiptStorage::GetReceipt(int id)
 {
     auto it = m_Receipts.find(id);
-    if(it == m_Receipts.end()) throw std::runtime_error("Receipt does not exist");
+    if(it == m_Receipts.end()) std::nullopt;
     return it->second;
 }
 
