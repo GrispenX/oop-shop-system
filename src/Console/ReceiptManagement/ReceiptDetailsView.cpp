@@ -45,8 +45,6 @@ std::unique_ptr<IView> ReceiptDetailsView::Run()
         }
     }
 
-    std::cout << "Total:     " << r.CalcTotal() << "\n";
-
     std::optional<int> customer_id = r.GetCustomerID();
     if(customer_id.has_value())
     {
@@ -60,6 +58,8 @@ std::unique_ptr<IView> ReceiptDetailsView::Run()
             }
         }
     }
+
+    std::cout << "Total:     " << r.CalcTotal() << "\n";
 
     if(r.GetStatus() != ReceiptStatus::OPENED)
     {

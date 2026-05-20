@@ -10,6 +10,8 @@
 
 - Створення чеків з обрахунком вартості в процесі створення
 
+![Screenshot](image.png)
+
 ## Build & run
 
 ### Підготовка
@@ -38,3 +40,19 @@ cmake --build .
 ```bash
 ./tests/ATP_test
 ```
+
+## See also
+
+[User guide](docs/USER_GUIDE.md)
+
+[Developer guide](docs/DEVELOPER_GUIDE.md)
+
+[Final report](docs/FINAL_REPORT.md)
+
+[Testing](docs/TESTING.md)
+
+[Vision](docs/vision.md)
+
+[Test matrix](docs/test-matrix.md)
+
+[Test strategy](docs/test-strategy.md)
