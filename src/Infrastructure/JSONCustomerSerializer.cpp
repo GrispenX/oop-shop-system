@@ -25,6 +25,14 @@ nlohmann::json JSONCustomerSerializer::Serialize(Customer customer)
 
 Customer JSONCustomerSerializer::Deserialize(nlohmann::json customer_json)
 {
+    if(!(
+        customer_json.contains("id") &&
+        customer_json.contains("name") &&
+        customer_json.contains("surname") &&
+        customer_json.contains("cashback_balance") &&
+        customer_json.contains("cashback_strategy")
+    )) throw std::runtime_error("Invalid json");
+
     int id = customer_json["id"].get<int>();
     std::string name = customer_json["name"].get<std::string>();
     std::string surname = customer_json["surname"].get<std::string>();

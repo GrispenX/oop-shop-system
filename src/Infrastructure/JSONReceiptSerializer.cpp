@@ -34,6 +34,13 @@ nlohmann::json JSONReceiptSerializer::Serialize(Receipt receipt)
 
 Receipt JSONReceiptSerializer::Deserialize(nlohmann::json receipt_json)
 {
+    if(!(
+        receipt_json.contains("id") &&
+        receipt_json.contains("timestamp") &&
+        receipt_json.contains("status") &&
+        receipt_json.contains("items")
+    )) throw std::runtime_error("Invalid json");
+
     JSONProductSerializer product_serializer;
 
     std::vector<ReceiptItem> items;
@@ -50,7 +57,7 @@ Receipt JSONReceiptSerializer::Deserialize(nlohmann::json receipt_json)
     std::optional<int> customer_id = std::nullopt;
     double used_cashback = 0;
 
-    if(receipt_json.contains("customer"))
+    if(receipt_json.contains("customer_id") && receipt_json.contains("used_cashback"))
     {
         customer_id = receipt_json["customer_id"].get<int>();
         used_cashback = receipt_json["used_cashback"].get<double>();
