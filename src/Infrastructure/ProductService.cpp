@@ -9,6 +9,8 @@ ProductService::ProductService(std::shared_ptr<IProductStorage> product_storage,
 
 int ProductService::CreateProduct(std::string name, double price)
 {
+    if(name.empty()) throw std::runtime_error("Name should not be empty");
+    if(price <= 0) throw std::runtime_error("Price should be greater than 0");
     Product product(0, name, price, nullptr);
     int id = m_ProductStorage->AddProduct(product);
     m_InventoryStorage->SetStock(id, 0);
@@ -17,6 +19,7 @@ int ProductService::CreateProduct(std::string name, double price)
 
 void ProductService::SetPrice(int product_id, double price)
 {
+    if(price <= 0) throw std::runtime_error("Price should be greater than 0");
     std::optional<Product> product = m_ProductStorage->GetProduct(product_id);
     if(!product) throw std::runtime_error("Product not found");
     product->SetPrice(price);
@@ -25,6 +28,7 @@ void ProductService::SetPrice(int product_id, double price)
 
 void ProductService::SetName(int product_id, std::string name)
 {
+    if(name.empty()) throw std::runtime_error("Name should not be empty");
     std::optional<Product> product = m_ProductStorage->GetProduct(product_id);
     if(!product) throw std::runtime_error("Product not found");
     product->SetName(name);
