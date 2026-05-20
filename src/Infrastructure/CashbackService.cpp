@@ -8,6 +8,9 @@ CashbackService::CashbackService(std::shared_ptr<ICustomerStorage> customer_stor
 
 int CashbackService::CreateCustomer(std::string name, std::string surname, std::shared_ptr<ICashbackStrategy> cashback_strategy)
 {
+    if(name.empty()) throw std::runtime_error("Name should not be empty");
+    if(surname.empty()) throw std::runtime_error("Surname should not be empty");
+    if(cashback_strategy == nullptr) throw std::runtime_error("Customer should have cashback strategy");
     Customer customer(0, name, surname, 0, cashback_strategy);
     return m_CustomerStorage->Add(customer);
 }
@@ -24,6 +27,7 @@ std::vector<Customer> CashbackService::GetAllCustomers()
 
 void CashbackService::SetCustomerName(int customer_id, std::string name)
 {
+    if(name.empty()) throw std::runtime_error("Name should not be empty");
     std::optional<Customer> customer = m_CustomerStorage->Get(customer_id);
     if(!customer) throw std::runtime_error("Customer not found");
     customer->SetName(name);
@@ -32,6 +36,7 @@ void CashbackService::SetCustomerName(int customer_id, std::string name)
 
 void CashbackService::SetCustomerSurname(int customer_id, std::string surname)
 {
+    if(surname.empty()) throw std::runtime_error("Surname should not be empty");
     std::optional<Customer> customer = m_CustomerStorage->Get(customer_id);
     if(!customer) throw std::runtime_error("Customer not found");
     customer->SetSurname(surname);
