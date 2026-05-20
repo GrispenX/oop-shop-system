@@ -56,16 +56,9 @@ void ReceiptService::CloseReceipt(int receipt_id, double use_cashback)
     
     if(customer_id.has_value() && use_cashback != 0)
     {
+        if(receipt->CalcTotal() < use_cashback) throw std::runtime_error("Cannot use more cashback than receipt total");
         receipt->SetUsedCashback(use_cashback);
-        try
-        {
-            m_CashbackService->UseCashback(customer_id.value(), use_cashback);
-        }
-        catch(const std::exception& e)
-        {
-            receipt->SetUsedCashback(0);
-            throw;
-        }
+        m_CashbackService->UseCashback(customer_id.value(), use_cashback);
     }
 
     if(customer_id.has_value())

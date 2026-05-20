@@ -106,5 +106,5 @@ double Receipt::CalcTotal() const
     {
         total += item.CalcPrice();
     }
-    return total;
+    return total - m_UsedCashback;
 }
