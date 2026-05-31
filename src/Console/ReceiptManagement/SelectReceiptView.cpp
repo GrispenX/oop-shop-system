@@ -1,5 +1,7 @@
 #include "Console/ReceiptManagement/SelectReceiptView.h"
 #include "Console/ReceiptManagement/ReceiptDetailsView.h"
+#include "Console/SafeRead.h"
+#include "Console/TerminalStyle.h"
 #include <iostream>
 
 SelectReceiptView::SelectReceiptView(Context context) :
@@ -11,8 +13,11 @@ SelectReceiptView::SelectReceiptView(Context context) :
 std::unique_ptr<IView> SelectReceiptView::Run()
 {
     int id;
-    std::cout << "Receipt ID: ";
-    std::cin >> id;
+    while (!SafeRead("Receipt ID", id))
+    {
+        TerminalStyle::PrintError("ID should be an integer");
+    }
+    
 
     std::optional<Receipt> receipt = m_Context.receipt_service->GetReceipt(id);
 
@@ -23,7 +28,7 @@ std::unique_ptr<IView> SelectReceiptView::Run()
     }
     else
     {
-        std::cout << "\033[1;31mReceipt not found! Try again\033[0m\n";
+        TerminalStyle::PrintError("Receipt not found");
         return std::make_unique<SelectReceiptView>(m_Context);
     }
 }

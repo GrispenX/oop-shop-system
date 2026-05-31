@@ -1,6 +1,7 @@
+#include "Console/TerminalStyle.h"
 #include "Console/CashbackManagement/EditCustomerView.h"
 #include "Console/CashbackManagement/CashbackView.h"
-#include "Console/ReadWithValidation.h"
+#include "Console/SafeRead.h"
 #include <iostream>
 #include <iomanip>
 
@@ -16,7 +17,7 @@ std::unique_ptr<IView> EditCustomerView::Run()
     std::optional<Customer> customer = m_Context.cashback_service->GetCustomer(m_CustomerID);
     if(!customer.has_value())
     {
-        std::cout << "\033[1;31m" << "Customer not found" << "\033[0m\n\n";
+        TerminalStyle::PrintError("Customer not found");
         return std::make_unique<CashbackView>(m_Context);
     }
 
@@ -32,15 +33,27 @@ std::unique_ptr<IView> EditCustomerView::Run()
     std::cout << "  3. Back\n";
     std::cout << "\n";
 
-    int choice = ReadWithValidation<int>("Choice", [](int i) { return i >= 1 && i <= 3; });
+    int choice = 0;
+    while(!(SafeRead("Option", choice) && choice >= 1 && choice <= 3))
+    {
+        TerminalStyle::PrintError("Invalid option");
+    }
 
     switch (choice)
     {
     case 1: {
         std::string new_name;
-        std::cout << "New name: ";
-        std::cin >> new_name;
-        m_Context.cashback_service->SetCustomerName(m_CustomerID, new_name);
+        SafeRead("New name", new_name);
+        
+        try
+        {
+            m_Context.cashback_service->SetCustomerName(m_CustomerID, new_name);
+        }
+        catch(const std::exception& e)
+        {
+            TerminalStyle::PrintError(e.what());
+        }
+
         std::cout << "\n";
         return std::make_unique<EditCustomerView>(m_Context, m_CustomerID);
         break;
@@ -48,9 +61,17 @@ std::unique_ptr<IView> EditCustomerView::Run()
 
     case 2: {
         std::string new_surname;
-        std::cout << "New surname: ";
-        std::cin >> new_surname;
-        m_Context.cashback_service->SetCustomerSurname(m_CustomerID, new_surname);
+        SafeRead("New surname", new_surname);
+
+        try
+        {
+            m_Context.cashback_service->SetCustomerSurname(m_CustomerID, new_surname);
+        }
+        catch(const std::exception& e)
+        {
+            TerminalStyle::PrintError(e.what());
+        }
+
         std::cout << "\n";
         return std::make_unique<EditCustomerView>(m_Context, m_CustomerID);
         break;

@@ -3,7 +3,8 @@
 #include "Console/ReceiptManagement/SelectReceiptView.h"
 #include "Console/ReceiptManagement/ReceiptDetailsView.h"
 #include "Console/MainView.h"
-#include "Console/ReadWithValidation.h"
+#include "Console/SafeRead.h"
+#include "Console/TerminalStyle.h"
 #include <iostream>
 
 ReceiptsView::ReceiptsView(Context context) :
@@ -21,7 +22,11 @@ std::unique_ptr<IView> ReceiptsView::Run()
     std::cout << "  4. Back\n";
     std::cout << "\n";
 
-    int choice = ReadWithValidation<int>("Choice", [](int input) { return input >= 1 && input <= 4; });
+    int choice = 0;
+    while(!(SafeRead("Option", choice) && choice >= 1 && choice <= 4))
+    {
+        TerminalStyle::PrintError("Invalid option");
+    }
 
     switch (choice)
     {

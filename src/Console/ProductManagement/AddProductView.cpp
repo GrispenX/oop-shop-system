@@ -1,3 +1,5 @@
+#include "Console/TerminalStyle.h"
+#include "Console/SafeRead.h"
 #include "Console/ProductManagement/AddProductView.h"
 #include "Console/ProductManagement/ProductsView.h"
 #include <iostream>
@@ -12,11 +14,11 @@ std::unique_ptr<IView> AddProductView::Run()
 {
     std::string name;
     double price;
-
-    std::cout << "Name: ";
-    std::cin >> name;
-    std::cout << "Price: ";
-    std::cin >> price;
+    SafeRead("Name", name);
+    while(!SafeRead("Price", price))
+    {
+        TerminalStyle::PrintError("Price should be a number");
+    }
 
     try
     {
@@ -24,7 +26,7 @@ std::unique_ptr<IView> AddProductView::Run()
     }
     catch(const std::exception& e)
     {
-        std::cout << "\033[1;31m" << e.what() << "\033[0m\n";
+        TerminalStyle::PrintError(e.what());
     }
     
     std::cout << "\n";

@@ -1,7 +1,8 @@
 #include "Console/ReceiptManagement/ReceiptDetailsView.h"
 #include "Console/ReceiptManagement/SelectReceiptView.h"
 #include "Console/ReceiptManagement/ReceiptsView.h"
-#include "Console/ReadWithValidation.h"
+#include "Console/SafeRead.h"
+#include "Console/TerminalStyle.h"
 #include <iostream>
 #include <iomanip>
 #include <format>
@@ -18,7 +19,7 @@ std::unique_ptr<IView> ReceiptDetailsView::Run()
     std::optional<Receipt> receipt = m_Context.receipt_service->GetReceipt(m_ReceiptID);
     if(!receipt.has_value())
     {
-        std::cout << "\033[1;31mReceipt not found!\033[0m\n";
+        TerminalStyle::PrintError("Receipt not found");
         return std::make_unique<SelectReceiptView>(m_Context);
     }
     Receipt r = receipt.value();
@@ -75,25 +76,34 @@ std::unique_ptr<IView> ReceiptDetailsView::Run()
     std::cout << "  5. Back\n";
     std::cout << "\n";
 
-    int choice = ReadWithValidation<int>("Choice", [](int i) { return i >= 1 && i <= 5; });
+    int choice = 0;
+    while(!(SafeRead("Option", choice) && choice >= 1 && choice <= 5))
+    {
+        TerminalStyle::PrintError("Invalid option");
+    }
     
     switch (choice)
     {
     case 1: {
-        int product_id;
-        int quantity;
-        std::cout << "Product ID: ";
-        std::cin >> product_id;
-        std::cout << "Quantity: ";
-        std::cin >> quantity;
+        int product_id, quantity;
+        while (!SafeRead("Product ID", product_id))
+        {
+            TerminalStyle::PrintError("ID should be an integer");
+        }
+        while (!SafeRead("Quantity", quantity))
+        {
+            TerminalStyle::PrintError("Quantity should be an integer");
+        }
+
         try
         {
             m_Context.receipt_service->AddItemToReceipt(m_ReceiptID, product_id, quantity);
         }
         catch(const std::exception& e)
         {
-            std::cout << "\033[1;31m" << e.what() << "\033[0m\n";
+            TerminalStyle::PrintError(e.what());
         }
+
         std::cout << "\n";
         return std::make_unique<ReceiptDetailsView>(m_Context, m_ReceiptID);
         break;
@@ -106,20 +116,24 @@ std::unique_ptr<IView> ReceiptDetailsView::Run()
             std::optional<Customer> customer = m_Context.cashback_service->GetCustomer(customer_id.value());
             if(customer.has_value())
             {
-                std::cout << "How much cashback would you like to use: ";
-                std::cin >> use_cashback;
+                while (!SafeRead("How much cashback whould you like to use", use_cashback))
+                {
+                    TerminalStyle::PrintError("Cashback should be a number");
+                }
             }
         }
+
         try
         {
             m_Context.receipt_service->CloseReceipt(m_ReceiptID, use_cashback);
         }
         catch(const std::exception& e)
         {
-            std::cout << "\033[1;31m" << e.what() << "\033[0m\n";
+            TerminalStyle::PrintError(e.what());
             std::cout << "\n";
             return std::make_unique<ReceiptDetailsView>(m_Context, m_ReceiptID);
         }
+
         std::cout << "\n";
         return std::make_unique<ReceiptsView>(m_Context);
         break;
@@ -132,24 +146,29 @@ std::unique_ptr<IView> ReceiptDetailsView::Run()
         }
         catch(const std::exception& e)
         {
-            std::cout << "\033[1;31m" << e.what() << "\033[0m\n";
+            TerminalStyle::PrintError(e.what());
         }
+
         std::cout << "\n";
         return std::make_unique<ReceiptsView>(m_Context);
         break;
     
     case 4: {
         int customer_id;
-        std::cout << "Customer ID: ";
-        std::cin >> customer_id;
+        while (!SafeRead("Customer ID", customer_id))
+        {
+            TerminalStyle::PrintError("ID should be an integer");
+        }
+        
         try
         {
             m_Context.receipt_service->AddCustomerToReceipt(m_ReceiptID, customer_id);
         }
         catch(const std::exception& e)
         {
-            std::cout << "\033[1;31m" << e.what() << "\033[0m\n";
+            TerminalStyle::PrintError(e.what());
         }
+
         std::cout << "\n";
         return std::make_unique<ReceiptDetailsView>(m_Context, m_ReceiptID);
         break;

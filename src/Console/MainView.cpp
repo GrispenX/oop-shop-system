@@ -1,8 +1,9 @@
+#include "Console/TerminalStyle.h"
 #include "Console/MainView.h"
 #include "Console/ProductManagement/ProductsView.h"
 #include "Console/ReceiptManagement/ReceiptsView.h"
 #include "Console/CashbackManagement/CashbackView.h"
-#include "Console/ReadWithValidation.h"
+#include "Console/SafeRead.h"
 #include <iostream>
 
 MainView::MainView(Context context) :
@@ -21,7 +22,11 @@ std::unique_ptr<IView> MainView::Run()
     std::cout << "  4. Quit\n";
     std::cout << "\n";
 
-    int choice = ReadWithValidation<int>("Choice", [](int i) { return i >= 1 && i <= 4; });
+    int choice = 0;
+    while(!(SafeRead("Option", choice) && choice >= 1 && choice <= 4))
+    {
+        TerminalStyle::PrintError("Invalid option");
+    }
 
     std::cout << "\n";
     

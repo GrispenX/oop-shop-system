@@ -1,5 +1,7 @@
 #include "Console/ProductManagement/SelectProductView.h"
 #include "Console/ProductManagement/EditProductView.h"
+#include "Console/SafeRead.h"
+#include "Console/TerminalStyle.h"
 #include <iostream>
 
 SelectProductView::SelectProductView(Context context) :
@@ -11,8 +13,10 @@ SelectProductView::SelectProductView(Context context) :
 std::unique_ptr<IView> SelectProductView::Run()
 {
     int id;
-    std::cout << "Product ID: ";
-    std::cin >> id;
+    while(!SafeRead("Product ID", id))
+    {
+        TerminalStyle::PrintError("ID should be an integer");
+    }
 
     std::optional<Product> product = m_Context.product_service->GetProduct(id);
 
@@ -23,7 +27,7 @@ std::unique_ptr<IView> SelectProductView::Run()
     }
     else
     {
-        std::cout << "\033[1;31mProduct not found! Try again\033[0m\n";
+        TerminalStyle::PrintError("Product not found");
         return std::make_unique<SelectProductView>(m_Context);
     }
 }
