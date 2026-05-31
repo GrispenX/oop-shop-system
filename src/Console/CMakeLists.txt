@@ -1,4 +1,6 @@
 add_library(Console
+    TerminalStyle.cpp
+
     MainView.cpp
     ProductManagement/ProductsView.cpp
     ProductManagement/ListProductsView.cpp

@@ -1,5 +1,6 @@
+#include "Console/TerminalStyle.h"
 #include "Console/CashbackManagement/CashbackView.h"
-#include "Console/ReadWithValidation.h"
+#include "Console/SafeRead.h"
 #include "Console/MainView.h"
 #include "Console/CashbackManagement/ListCustomersView.h"
 #include "Console/CashbackManagement/EditCustomerView.h"
@@ -21,7 +22,11 @@ std::unique_ptr<IView> CashbackView::Run()
     std::cout << "  4. Back\n";
     std::cout << "\n";
 
-    int choice = ReadWithValidation<int>("Choice", [](int i) { return i >= 1 && i <= 4; });
+    int choice = 0;
+    while(!(SafeRead("Option", choice) && choice >= 1 && choice <= 4))
+    {
+        TerminalStyle::PrintError("Invalid option");
+    }
 
     switch (choice)
     {
@@ -33,18 +38,18 @@ std::unique_ptr<IView> CashbackView::Run()
     case 2:
     {
         std::string name, surname;
-        std::cout << "Name: ";
-        std::cin >> name;
-        std::cout << "Surname: ";
-        std::cin >> surname;
+        SafeRead("Name", name);
+        SafeRead("Surname", surname);
+
         try
         {
             m_Context.cashback_service->CreateCustomer(name, surname, std::make_shared<RegularCashback>());
         }
         catch(const std::exception& e)
         {
-            std::cout << "\033[1;31m" << e.what() << "\033[0m\n";
+            TerminalStyle::PrintError(e.what());
         }
+
         std::cout << "\n";
         return std::make_unique<CashbackView>(m_Context);
         break;
@@ -52,8 +57,11 @@ std::unique_ptr<IView> CashbackView::Run()
 
     case 3: {
         int customer_id;
-        std::cout << "Customer ID: ";
-        std::cin >> customer_id;
+        while(!SafeRead("Customer ID", customer_id))
+        {
+            TerminalStyle::PrintError("ID should be an integer");
+        }
+        
         std::cout << "\n";
         return std::make_unique<EditCustomerView>(m_Context, customer_id);
         break;
