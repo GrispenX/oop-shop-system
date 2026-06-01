@@ -1,13 +1,16 @@
-name: C/C++ CI
+name: C/C++ CI/CD
 
 on:
   push:
     branches: [ "master" ]
+    tags:
+      - 'v*'
   pull_request:
     branches: [ "master" ]
+  workflow_dispatch:
 
 jobs:
-  build:
+  ci:
 
     runs-on: ubuntu-latest
 
@@ -25,3 +28,40 @@ jobs:
 
     - name: test
       run: ./build/tests/ATP_test
+
+  cd-release:
+    name: CD Release (tag)
+    needs: ci
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: sudo apt update && sudo apt install libgtest-dev libgmock-dev nlohmann-json3-dev
+
+    - name: Configure CMake
+      run: cmake -S . -B build
+
+    - name: Build
+      run: make -C build
+
+    - name: Test
+      run: ./build/tests/ATP_test
+
+    - name: Package binary
+      run: |
+        mkdir -p dist
+        cp build/src/ATP dist/
+        tar -czf ATP-${{ github.ref_name }}-linux.tar.gz -C dist ATP
+
+    - name: Publish GitHub Release
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release create \
+          "${{ github.ref_name }}" \
+          "ATP-${{ github.ref_name }}-linux.tar.gz" \
+          --generate-notes
